@@ -49,11 +49,43 @@ DEBUG: message = hey
 
 ---
 
-## Remaining Issue: "No response from AI"
+## Second Issue: "No response from AI" - FIX READY! 🛠️
 
-The brainController is returning "No response from AI" which suggests an issue with parsing the Anthropic API response. This needs separate investigation.
+After fixing [object Object], a new issue appeared: brainController returns "No response from AI".
 
-### Next Steps
-1. Check Anthropic API response format
-2. Verify API key is valid
-3. Check response parsing logic in brainController.js
+### Root Cause
+The Anthropic API response parsing in brainController.js lacks proper error handling and debug logging. Possible issues:
+- API authentication error (invalid/missing API key)
+- Invalid model name
+- Wrong response structure parsing
+- Rate limiting
+
+### Solution Created
+Created `FIX-NO-RESPONSE.sh` which:
+1. Adds comprehensive debug logging to see the actual API response
+2. Adds proper error handling for API errors
+3. Logs HTTP status codes and full response bodies
+4. Makes it easy to diagnose exactly what's failing
+
+### How to Apply
+```bash
+# On EC2 server
+chmod +x FIX-NO-RESPONSE.sh
+./FIX-NO-RESPONSE.sh
+
+# Restart PM2
+cd /home/ubuntu/signaturebrain-backend
+pm2 restart all && pm2 flush
+
+# Send a test message, then check logs
+pm2 logs --lines 50
+```
+
+The logs will show exactly what the Anthropic API is returning, making it easy to fix the specific issue.
+
+### Documentation
+See `NO-RESPONSE-DIAGNOSTIC.md` for:
+- Detailed diagnostic steps
+- What to look for in logs
+- Specific fixes for each error scenario
+- Quick reference guide
