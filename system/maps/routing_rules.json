@@ -7,9 +7,15 @@
   },
   "long_form_writing": {
     "preferred_model": "claude",
-    "fallback_model": "grok",
+    "fallback_model": "openai",
     "description": "Long-form content creation and editing",
     "timeout_seconds": 60
+  },
+  "creative_writing": {
+    "preferred_model": "openai",
+    "fallback_model": "claude",
+    "description": "Creative writing, brainstorming, and ideation",
+    "timeout_seconds": 45
   },
   "coding": {
     "preferred_model": "deepseek",
@@ -19,14 +25,20 @@
   },
   "research": {
     "preferred_model": "perplexity",
-    "fallback_model": "claude",
+    "fallback_model": "grok",
     "description": "Research and information gathering with web access",
     "timeout_seconds": 30
   },
   "general": {
+    "preferred_model": "grok",
+    "fallback_model": "deepseek",
+    "description": "General-purpose tasks and conversations",
+    "timeout_seconds": 30
+  },
+  "analysis": {
     "preferred_model": "claude",
     "fallback_model": "openai",
-    "description": "General-purpose tasks",
-    "timeout_seconds": 30
+    "description": "Complex analysis and reasoning tasks",
+    "timeout_seconds": 45
   }
 }
