@@ -1,0 +1,32 @@
+{
+  "strategy": {
+    "preferred_model": "grok",
+    "fallback_model": "claude",
+    "description": "Strategic planning and decision-making tasks",
+    "timeout_seconds": 30
+  },
+  "long_form_writing": {
+    "preferred_model": "claude",
+    "fallback_model": "grok",
+    "description": "Long-form content creation and editing",
+    "timeout_seconds": 60
+  },
+  "coding": {
+    "preferred_model": "deepseek",
+    "fallback_model": "claude",
+    "description": "Code generation and debugging tasks",
+    "timeout_seconds": 45
+  },
+  "research": {
+    "preferred_model": "perplexity",
+    "fallback_model": "claude",
+    "description": "Research and information gathering with web access",
+    "timeout_seconds": 30
+  },
+  "general": {
+    "preferred_model": "claude",
+    "fallback_model": "openai",
+    "description": "General-purpose tasks",
+    "timeout_seconds": 30
+  }
+}

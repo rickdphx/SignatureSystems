@@ -1,0 +1,42 @@
+{
+  "grok": {
+    "provider": "xAI",
+    "model_identifier": "grok-beta",
+    "context_limit": 131072,
+    "description": "Grok by xAI - Fast and capable model with large context window",
+    "supports_streaming": true,
+    "supports_function_calling": true
+  },
+  "claude": {
+    "provider": "Anthropic",
+    "model_identifier": "claude-3-5-sonnet-20241022",
+    "context_limit": 200000,
+    "description": "Claude 3.5 Sonnet - Excellent for complex reasoning and long-form content",
+    "supports_streaming": true,
+    "supports_function_calling": true
+  },
+  "openai": {
+    "provider": "OpenAI",
+    "model_identifier": "gpt-4-turbo-preview",
+    "context_limit": 128000,
+    "description": "GPT-4 Turbo - Powerful general-purpose model",
+    "supports_streaming": true,
+    "supports_function_calling": true
+  },
+  "perplexity": {
+    "provider": "Perplexity",
+    "model_identifier": "pplx-70b-online",
+    "context_limit": 4096,
+    "description": "Perplexity - Specialized for research and web-enhanced responses",
+    "supports_streaming": true,
+    "supports_function_calling": false
+  },
+  "deepseek": {
+    "provider": "DeepSeek",
+    "model_identifier": "deepseek-chat",
+    "context_limit": 32768,
+    "description": "DeepSeek - Efficient model for coding and reasoning tasks",
+    "supports_streaming": true,
+    "supports_function_calling": true
+  }
+}
