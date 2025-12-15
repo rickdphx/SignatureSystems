@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signature Brain - Ben Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .logo-text h1 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .logo-text p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.875rem;
+        }
+
+        .task-selector {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .task-selector label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+        }
+
+        .task-selector select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 2rem;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            min-height: 400px;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 80%;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .message.assistant .message-content {
+            background: rgba(255, 255, 255, 0.1);
+            text-align: left;
+        }
+
+        .message-meta {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 0.5rem;
+        }
+
+        .input-area {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .input-area input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            padding: 0.75rem;
+            outline: none;
+        }
+
+        .input-area input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: none;
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: transform 0.2s;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .welcome {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 4rem 2rem;
+        }
+
+        .welcome h2 {
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">בן</div>
+            <div class="logo-text">
+                <h1>SIGNATURE BRAIN</h1>
+                <p>BEN - TRUTH FIRST ASSISTANT</p>
+            </div>
+        </div>
+        <div class="task-selector">
+            <label for="taskType">Task Type:</label>
+            <select id="taskType">
+                <option value="general">General</option>
+                <option value="strategy">Strategy</option>
+                <option value="long_form_writing">Long Form Writing</option>
+                <option value="creative_writing">Creative Writing</option>
+                <option value="coding">Coding</option>
+                <option value="research">Research</option>
+                <option value="analysis">Analysis</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="chat-container" id="chatContainer">
+            <div class="welcome">
+                <h2>Ready when you are.</h2>
+                <p>Ask me anything. I'll route your request to the best model for the task.</p>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input
+                type="text"
+                id="messageInput"
+                placeholder="Ask anything..."
+                autocomplete="off"
+            />
+            <button class="send-button" id="sendButton">➤</button>
+        </div>
+    </div>
+
+    <script>
+        // Use relative URLs - will work with nginx proxy
+        const API_BASE = '';
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const taskTypeSelect = document.getElementById('taskType');
+
+        let isProcessing = false;
+
+        function addMessage(content, type, meta = '') {
+            const welcome = chatContainer.querySelector('.welcome');
+            if (welcome) welcome.remove();
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
+
+            messageDiv.appendChild(contentDiv);
+
+            if (meta) {
+                const metaDiv = document.createElement('div');
+                metaDiv.className = 'message-meta';
+                metaDiv.textContent = meta;
+                messageDiv.appendChild(metaDiv);
+            }
+
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const prompt = messageInput.value.trim();
+            if (!prompt || isProcessing) return;
+
+            const taskType = taskTypeSelect.value;
+
+            addMessage(prompt, 'user');
+            messageInput.value = '';
+            isProcessing = true;
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<span class="loading"></span>';
+
+            try {
+                // First, get routing info
+                const routingResponse = await fetch(`${API_BASE}/ben/route?task_type=${taskType}`);
+                const routing = await routingResponse.json();
+
+                // Then execute the task
+                const response = await fetch(`${API_BASE}/ben/execute?task_type=${taskType}&prompt=${encodeURIComponent(prompt)}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    addMessage(
+                        data.response,
+                        'assistant',
+                        `${routing.preferred} (fallback: ${routing.fallback})`
+                    );
+                } else {
+                    addMessage(
+                        `Error: ${data.error}`,
+                        'assistant',
+                        'Error occurred'
+                    );
+                }
+            } catch (error) {
+                addMessage(
+                    `Connection error: ${error.message}`,
+                    'assistant',
+                    'Failed to connect to API'
+                );
+            } finally {
+                isProcessing = false;
+                sendButton.disabled = false;
+                sendButton.innerHTML = '➤';
+                messageInput.focus();
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Focus input on load
+        messageInput.focus();
+    </script>
+</body>
+</html>

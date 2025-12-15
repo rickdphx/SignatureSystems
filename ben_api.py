@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from typing import Optional
 from fastapi import FastAPI, Query, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 
 # Import our LLM clients
 try:
@@ -59,9 +59,16 @@ async def root():
             "/health",
             "/docs",
             "/openapi.json",
-            "/ben/route"
+            "/ben/route",
+            "/app"
         ]
     }
+
+
+@app.get("/app")
+async def serve_app():
+    """Serve the frontend application"""
+    return FileResponse("index.html")
 
 
 @app.get("/health")
@@ -120,17 +127,13 @@ async def get_model_info(model_name: str):
     }
 
 
-@app.post("/ben/execute")
+@app.get("/ben/execute")
 async def execute_task(
     task_type: str = Query(..., description="Type of task"),
     prompt: str = Query(..., description="Prompt to send to the model"),
-    use_fallback: bool = Query(False, description="Use fallback model instead of preferred")
+    use_fallback: bool = Query(False, description="Use fallback model")
 ):
-    """
-    Execute a task using the appropriate model
-
-    This is a stub implementation that demonstrates the routing
-    """
+    """Execute a task using the appropriate model"""
     # Get routing
     rule = routing_rules.get(task_type, {})
     preferred = rule.get("preferred_model", "claude")
