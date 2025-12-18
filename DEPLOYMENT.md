@@ -102,6 +102,9 @@ ss -tlnp | grep :8000
 # Test backend directly
 curl http://localhost:8000/
 
+# Test brain API endpoints
+curl http://localhost:8000/brain/session/start1
+
 # Check backend logs
 journalctl -u your-backend-service -n 50
 ```
@@ -184,6 +187,97 @@ python ben_api.py &
 
 # Or with uvicorn
 uvicorn ben_api:app --host 127.0.0.1 --port 8000 &
+```
+
+#### 5. Blank Admin Page
+
+**Symptoms**:
+- Admin page loads but is blank/white screen
+- Browser console shows errors about failed API calls to `/brain/` endpoints
+
+**Solution**: Ensure nginx config includes `/brain/` location block:
+```nginx
+location /brain/ {
+    proxy_pass http://127.0.0.1:8000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+After updating nginx config:
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+#### 6. Swagger UI OpenAPI Version Issues
+
+**Symptoms**:
+- Swagger UI not loading properly
+- Error messages about OpenAPI specification version
+- `/docs` endpoint returns errors
+
+**Common Causes**:
+1. OpenAPI version mismatch (expecting 2.0 vs 3.0+)
+2. FastAPI configuration issues
+
+**Solution**: Update FastAPI backend configuration in `ben_api.py`:
+
+```python
+from fastapi import FastAPI
+from fastapi.openapi.utils import get_openapi
+
+app = FastAPI(
+    title="SignatureBrain API",
+    description="Brain signature verification API",
+    version="1.0.0",
+    openapi_url="/api/openapi.json",  # Custom OpenAPI URL
+    docs_url="/docs",  # Swagger UI
+    redoc_url="/redoc"  # ReDoc
+)
+
+# Optional: Customize OpenAPI schema
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="SignatureBrain API",
+        version="1.0.0",
+        description="Brain signature verification and analysis API",
+        routes=app.routes,
+    )
+    openapi_schema["openapi"] = "3.0.2"  # Explicitly set OpenAPI version
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
+```
+
+**Test Swagger UI**:
+```bash
+# Access Swagger UI
+curl http://localhost:8000/docs
+
+# Check OpenAPI spec
+curl http://localhost:8000/openapi.json
+```
+
+If using nginx proxy, ensure `/docs` is proxied correctly:
+```nginx
+location /docs {
+    proxy_pass http://127.0.0.1:8000/docs;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+}
+
+location /openapi.json {
+    proxy_pass http://127.0.0.1:8000/openapi.json;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+}
 ```
 
 ### Check Logs
