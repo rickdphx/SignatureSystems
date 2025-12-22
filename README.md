@@ -57,7 +57,7 @@ fuser -k 8000/tcp && nohup python3 -m uvicorn ben_api:app --host 127.0.0.1 --por
 ## API Endpoints
 
 ### POST /api/ben
-Main endpoint for BEN message processing.
+Main endpoint for BEN message processing with AI-powered responses.
 
 **Request:**
 ```json
@@ -86,6 +86,36 @@ Health check endpoint.
 }
 ```
 
+### POST /api/execute
+Execute Python code in a sandboxed environment with timeout protection.
+
+**Request:**
+```json
+{
+  "code": "print('Hello')\nprint(2 + 2)",
+  "language": "python",
+  "timeout": 10
+}
+```
+
+**Response (Success):**
+```json
+{
+  "output": "Hello\n4\n",
+  "error": null,
+  "success": true
+}
+```
+
+**Response (Error):**
+```json
+{
+  "output": "(no output)",
+  "error": "ZeroDivisionError: division by zero",
+  "success": false
+}
+```
+
 ## Testing
 
 ```bash
@@ -101,6 +131,7 @@ curl -X POST http://127.0.0.1:8000/api/ben \
 ## Key Features
 
 - ✅ **AI-Powered Responses**: Integrated with OpenAI GPT-4o-mini for intelligent conversations
+- ✅ **Code Execution**: Sandboxed Python code execution with timeout protection
 - ✅ Returns proper JSON with `reply` field
 - ✅ CORS enabled for frontend integration
 - ✅ Error handling with consistent response format

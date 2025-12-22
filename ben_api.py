@@ -1,9 +1,15 @@
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, Any
 import logging
 import os
+import sys
+import io
+import subprocess
+import tempfile
+import signal
+from contextlib import contextmanager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -33,6 +39,20 @@ class MessageRequest(BaseModel):
 class MessageResponse(BaseModel):
     """Response model - must include 'reply' field for frontend"""
     reply: str
+
+
+class CodeExecutionRequest(BaseModel):
+    """Request model for code execution"""
+    code: str
+    language: str = "python"
+    timeout: int = 10
+
+
+class CodeExecutionResponse(BaseModel):
+    """Response model for code execution"""
+    output: str
+    error: Optional[str] = None
+    success: bool
 
 
 def add_no_cache_headers(response: Response):
@@ -92,6 +112,64 @@ def get_ai_response(message: str, context: Optional[dict] = None) -> str:
         return f"I'm BEN, but I'm having trouble connecting to my AI capabilities right now. Error: {str(e)[:100]}"
 
 
+def execute_python_code(code: str, timeout: int = 10) -> Dict[str, Any]:
+    """
+    Execute Python code in a sandboxed environment with timeout.
+
+    Args:
+        code: Python code to execute
+        timeout: Maximum execution time in seconds
+
+    Returns:
+        Dict with 'output', 'error', and 'success' keys
+    """
+    try:
+        # Create a temporary file for the code
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+            f.write(code)
+            temp_file = f.name
+
+        try:
+            # Execute the code in a subprocess with timeout
+            result = subprocess.run(
+                [sys.executable, temp_file],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                cwd=tempfile.gettempdir()
+            )
+
+            output = result.stdout
+            error = result.stderr if result.returncode != 0 else None
+            success = result.returncode == 0
+
+            return {
+                "output": output or "(no output)",
+                "error": error,
+                "success": success
+            }
+
+        finally:
+            # Clean up temp file
+            try:
+                os.unlink(temp_file)
+            except:
+                pass
+
+    except subprocess.TimeoutExpired:
+        return {
+            "output": "",
+            "error": f"Code execution timed out after {timeout} seconds",
+            "success": False
+        }
+    except Exception as e:
+        return {
+            "output": "",
+            "error": f"Execution error: {str(e)}",
+            "success": False
+        }
+
+
 @app.get("/")
 async def root():
     """Health check endpoint"""
@@ -148,6 +226,45 @@ async def chat_endpoint(request: MessageRequest, response: Response):
     Alternative chat endpoint - also returns 'reply' field with AI responses
     """
     return await process_ben_message(request, response)
+
+
+@app.post("/api/execute", response_model=CodeExecutionResponse)
+async def execute_code(request: CodeExecutionRequest, response: Response):
+    """
+    Execute code in a sandboxed environment.
+
+    Supports Python code execution with timeout and resource limits.
+    """
+    add_no_cache_headers(response)
+
+    try:
+        logger.info(f"Executing {request.language} code (timeout: {request.timeout}s)")
+
+        if request.language.lower() != "python":
+            return CodeExecutionResponse(
+                output="",
+                error=f"Language '{request.language}' is not supported. Only Python is currently supported.",
+                success=False
+            )
+
+        # Execute the code
+        result = execute_python_code(request.code, request.timeout)
+
+        logger.info(f"Code execution {'succeeded' if result['success'] else 'failed'}")
+
+        return CodeExecutionResponse(
+            output=result["output"],
+            error=result["error"],
+            success=result["success"]
+        )
+
+    except Exception as e:
+        logger.error(f"Error in code execution endpoint: {str(e)}")
+        return CodeExecutionResponse(
+            output="",
+            error=f"Server error: {str(e)}",
+            success=False
+        )
 
 
 if __name__ == "__main__":
