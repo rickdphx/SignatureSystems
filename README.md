@@ -5,6 +5,12 @@ Brain-like Emotional Network (BEN) API backend system.
 ## Problem Fixed
 The frontend expects backend responses with a `data.reply` field, but the backend wasn't returning proper JSON structure. This has been fixed.
 
+## AI Integration
+The backend now uses OpenAI's GPT-4o-mini model for intelligent conversational responses instead of canned replies. The implementation includes:
+- Lazy loading of OpenAI client to minimize memory usage
+- Proper proxy configuration for containerized environments
+- Graceful error handling with informative fallback messages
+
 ### Frontend Expectation (App.jsx line ~346):
 ```javascript
 const benMessage = {
@@ -94,12 +100,14 @@ curl -X POST http://127.0.0.1:8000/api/ben \
 
 ## Key Features
 
+- ✅ **AI-Powered Responses**: Integrated with OpenAI GPT-4o-mini for intelligent conversations
 - ✅ Returns proper JSON with `reply` field
 - ✅ CORS enabled for frontend integration
 - ✅ Error handling with consistent response format
 - ✅ Logging for debugging
 - ✅ Health check endpoints
 - ✅ FastAPI with Pydantic validation
+- ✅ Memory-optimized with lazy-loading AI client
 
 ## Deployment
 
