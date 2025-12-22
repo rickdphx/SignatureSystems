@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # OpenAI API key - can be set via environment variable or use default
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-proj-J_qTU1kwTRu8XTat5r7p230EspqCNIzUqrP1J2fZ12azWSfuz7t6dxMZAL6-NH5R")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "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")
 
 app = FastAPI(title="BEN API", description="Brain-like Emotional Network API")
 
