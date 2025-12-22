@@ -132,6 +132,7 @@ curl -X POST http://127.0.0.1:8000/api/ben \
 
 - ✅ **AI-Powered Responses**: Integrated with OpenAI GPT-4o-mini for intelligent conversations
 - ✅ **Code Execution**: Sandboxed Python code execution with timeout protection
+- ✅ **Auto-Focus Frontend**: React component with input auto-focus after sending messages
 - ✅ Returns proper JSON with `reply` field
 - ✅ CORS enabled for frontend integration
 - ✅ Error handling with consistent response format
@@ -139,6 +140,29 @@ curl -X POST http://127.0.0.1:8000/api/ben \
 - ✅ Health check endpoints
 - ✅ FastAPI with Pydantic validation
 - ✅ Memory-optimized with lazy-loading AI client
+
+## Frontend Integration
+
+### Auto-Focus Fix
+See `frontend-autofocus-fix.md` for detailed implementation guide on adding auto-focus functionality to the message input after sending.
+
+### Ready-to-Use Component
+`BENChat.jsx` provides a complete React component with:
+- Auto-focus after message send
+- Loading states
+- Error handling
+- Auto-scroll to latest message
+- Enter key support
+- Timestamps
+
+**Quick Integration:**
+```jsx
+import BENChat from './BENChat';
+
+function App() {
+  return <BENChat apiUrl="http://127.0.0.1:8000/api/ben" />;
+}
+```
 
 ## Deployment
 
