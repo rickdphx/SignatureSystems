@@ -17,26 +17,11 @@ const LoginScreen = () => {
     setIsConnecting(true);
     setError('');
 
-    try {
-      // Verify token with backend
-      const response = await fetch('/admin/api/verify-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token: tokenInput.trim() })
-      });
-
-      if (response.ok) {
-        login(tokenInput.trim());
-      } else {
-        setError('Invalid token');
-      }
-    } catch (err) {
-      setError('Connection failed. Please check your token and try again.');
-    } finally {
+    // Store token and proceed - backend will validate on API calls
+    setTimeout(() => {
+      login(tokenInput.trim());
       setIsConnecting(false);
-    }
+    }, 500);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
