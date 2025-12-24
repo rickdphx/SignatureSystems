@@ -1,4 +1,4 @@
-// API Service Layer for BIM Admin
+// API Service Layer for BEN Admin
 // All API calls are mocked for now but structured for easy replacement with real endpoints
 
 export interface Connector {

@@ -6,7 +6,7 @@ const Header = () => {
     <header className="header">
       <div className="header-content">
         <div className="header-left">
-          <h2 className="header-title">BIM Admin</h2>
+          <h2 className="header-title">BEN Admin</h2>
         </div>
 
         <div className="header-right">

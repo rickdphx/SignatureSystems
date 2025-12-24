@@ -24,7 +24,7 @@ const Sidebar = () => {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h1 className="sidebar-logo">BIM</h1>
+        <h1 className="sidebar-logo">BEN</h1>
         <p className="sidebar-subtitle">Admin Control</p>
       </div>
 

@@ -58,7 +58,7 @@ const Settings = () => {
               <h3>General Settings</h3>
               <div className="setting-item">
                 <label>Site Name</label>
-                <input type="text" defaultValue="BIM Admin" />
+                <input type="text" defaultValue="BEN Admin" />
               </div>
               <div className="setting-item">
                 <label>Admin Email</label>
@@ -151,8 +151,8 @@ const Settings = () => {
               <h3>Appearance Settings</h3>
               <div className="setting-item">
                 <label>Brand Name</label>
-                <input type="text" value="BIM" readOnly />
-                <p className="setting-note">Brand name is locked to BIM</p>
+                <input type="text" value="BEN" readOnly />
+                <p className="setting-note">Brand name is locked to BEN</p>
               </div>
               <div className="setting-item">
                 <label>Primary Color</label>
