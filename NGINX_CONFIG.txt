@@ -1,0 +1,70 @@
+=== NGINX CONFIGURATION FOR BEN ADMIN ===
+
+File: /etc/nginx/sites-enabled/signaturebrain
+Location: Around line 454
+
+FIND THIS BLOCK:
+-------------------
+    location /admin/ {
+        proxy_pass http://127.0.0.1:3000/admin/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+
+REPLACE WITH:
+-------------------
+    location /admin {
+        alias /var/www/signaturebrain/admin-ui;
+        try_files $uri $uri/ /admin/index.html;
+        index index.html;
+
+        # Security headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+
+        # Cache static assets
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+
+        # Don't cache HTML
+        location ~* \.html$ {
+            expires -1;
+            add_header Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0";
+        }
+    }
+
+
+ALSO REMOVE (if it exists):
+-------------------
+    location = /admin {
+        return 301 /admin/;
+    }
+
+
+COMMANDS TO UPDATE:
+-------------------
+1. Backup current config:
+   sudo cp /etc/nginx/sites-enabled/signaturebrain /etc/nginx/sites-enabled/signaturebrain.backup.$(date +%Y%m%d-%H%M%S)
+
+2. Edit the config:
+   sudo nano /etc/nginx/sites-enabled/signaturebrain
+   (Make the changes above)
+
+3. Test configuration:
+   sudo nginx -t
+
+4. If test passes, reload:
+   sudo systemctl reload nginx
+
+5. Test in browser:
+   https://signaturebrain.com/admin
