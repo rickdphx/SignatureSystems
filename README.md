@@ -10,10 +10,10 @@ WebSocket server for terminal response system with dynamic push updates.
 - **WebSocket Endpoints**:
   - `ws://localhost:3000` (local only)
   - `ws://127.0.0.1:3000` (local only)
-  - `ws://21.0.0.198:3000` (network accessible)
+  - `ws://21.0.0.150:3000` (network accessible)
 
 ## Test Client
-Access the built-in test client at: **http://21.0.0.198:3000/**
+Access the built-in test client at: **http://21.0.0.150:3000/**
 
 The test client provides a web interface to:
 - Configure the WebSocket URL
@@ -24,13 +24,13 @@ The test client provides a web interface to:
 ## Usage
 
 ### Option 1: Built-in Test Client
-1. Open http://21.0.0.198:3000/ in your browser
+1. Open http://21.0.0.150:3000/ in your browser
 2. The WebSocket URL and admin token are pre-filled
 3. Click "Connect"
 4. Watch terminal responses appear every 1 second
 
 ### Option 2: External Client (signaturebrain.com/admin/)
-1. Configure the WebSocket URL to `ws://21.0.0.198:3000`
+1. Configure the WebSocket URL to `ws://21.0.0.150:3000`
 2. Paste the admin token: `admin-token-12345`
 3. Click "Connect"
 
