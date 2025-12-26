@@ -85,6 +85,11 @@ function startTerminalPush(ws) {
   });
 }
 
+// Serve test client
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/test-client.html');
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
