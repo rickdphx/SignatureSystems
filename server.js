@@ -17,10 +17,12 @@ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'admin-token-12345';
 const clients = new Map();
 
 wss.on('connection', (ws, req) => {
-  console.log('New connection attempt');
+  const clientIP = req.socket.remoteAddress;
+  console.log(`[${new Date().toISOString()}] New connection from ${clientIP}`);
 
   ws.on('message', (message) => {
     try {
+      console.log(`[${new Date().toISOString()}] Received message:`, message.toString());
       const data = JSON.parse(message);
 
       // Handle token authentication
@@ -31,11 +33,12 @@ wss.on('connection', (ws, req) => {
             type: 'auth_success',
             message: 'Authentication successful'
           }));
-          console.log('Client authenticated');
+          console.log(`[${new Date().toISOString()}] Client authenticated successfully`);
 
           // Start sending terminal responses
           startTerminalPush(ws);
         } else {
+          console.log(`[${new Date().toISOString()}] Authentication failed - invalid token`);
           ws.send(JSON.stringify({
             type: 'auth_failed',
             message: 'Invalid token'
@@ -44,13 +47,17 @@ wss.on('connection', (ws, req) => {
         }
       }
     } catch (error) {
-      console.error('Error processing message:', error);
+      console.error(`[${new Date().toISOString()}] Error processing message:`, error);
     }
   });
 
   ws.on('close', () => {
     clients.delete(ws);
-    console.log('Client disconnected');
+    console.log(`[${new Date().toISOString()}] Client disconnected`);
+  });
+
+  ws.on('error', (error) => {
+    console.error(`[${new Date().toISOString()}] WebSocket error:`, error);
   });
 });
 
@@ -88,8 +95,25 @@ app.get('/health', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';
+
+server.listen(PORT, HOST, () => {
+  console.log(`Server running on ${HOST}:${PORT}`);
   console.log(`Admin token: ${ADMIN_TOKEN}`);
-  console.log(`WebSocket endpoint: ws://localhost:${PORT}`);
+  console.log(`\nWebSocket endpoints:`);
+  console.log(`  - ws://localhost:${PORT}`);
+  console.log(`  - ws://127.0.0.1:${PORT}`);
+
+  // Try to get the actual IP
+  const os = require('os');
+  const networkInterfaces = os.networkInterfaces();
+  Object.keys(networkInterfaces).forEach(interfaceName => {
+    networkInterfaces[interfaceName].forEach(iface => {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        console.log(`  - ws://${iface.address}:${PORT}`);
+      }
+    });
+  });
+
+  console.log(`\nHealth check: http://localhost:${PORT}/health`);
 });
