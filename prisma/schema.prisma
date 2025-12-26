@@ -1,0 +1,142 @@
+// Prisma schema for SignatureChair booking system
+// Multi-barber booking backend with Square integration
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Barber (team member) profile
+model Barber {
+  id                String   @id @default(uuid())
+  squareTeamMemberId String   @unique
+  slug              String   @unique
+  displayName       String
+  bio               String?
+  avatarUrl         String?
+  specialties       String[] // Array of specialties like "fades", "beards", "kids cuts"
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  services          BarberService[]
+  bookings          Booking[]
+
+  @@index([squareTeamMemberId])
+  @@index([slug])
+  @@index([isActive])
+}
+
+// Junction table linking barbers to services they offer
+model BarberService {
+  id                   String   @id @default(uuid())
+  barberId             String
+  serviceVariationId   String   // Square service variation ID
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Relations
+  barber               Barber   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+  @@unique([barberId, serviceVariationId])
+  @@index([barberId])
+  @@index([serviceVariationId])
+  @@index([isActive])
+}
+
+// Customer information
+model Customer {
+  id              String   @id @default(uuid())
+  squareCustomerId String?  @unique
+  firstName       String
+  lastName        String?
+  phone           String?
+  email           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  bookings        Booking[]
+
+  @@index([squareCustomerId])
+  @@index([phone])
+  @@index([email])
+}
+
+// Booking/Appointment
+model Booking {
+  id                      String   @id @default(uuid())
+  squareBookingId         String?  @unique
+  customerId              String
+  barberId                String
+  locationId              String
+  teamMemberId            String   // Square team member ID
+  serviceVariationId      String
+  serviceVariationVersion Int
+  startAt                 DateTime
+  duration                Int      // Duration in minutes
+  status                  String   @default("PENDING") // PENDING, ACCEPTED, CANCELLED_BY_CUSTOMER, CANCELLED_BY_SELLER, DECLINED, COMPLETED, NO_SHOW
+  source                  String   @default("web")     // phone, web, manual
+  customerNote            String?
+  sellerNote              String?
+  squareRequestPayload    Json?    // Store Square API request
+  squareResponsePayload   Json?    // Store Square API response
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  // Relations
+  customer                Customer @relation(fields: [customerId], references: [id])
+  barber                  Barber   @relation(fields: [barberId], references: [id])
+
+  @@index([squareBookingId])
+  @@index([customerId])
+  @@index([barberId])
+  @@index([startAt])
+  @@index([status])
+  @@index([teamMemberId])
+}
+
+// Call logs for voice intake
+model CallLog {
+  id                 String   @id @default(uuid())
+  callSid            String?  @unique
+  customerPhone      String
+  customerName       String?
+  barberSlug         String?
+  teamMemberId       String?
+  serviceRequested   String?
+  requestedDateTime  DateTime?
+  status             String   @default("initiated") // initiated, completed, failed, cancelled
+  duration           Int?     // Call duration in seconds
+  transcription      String?
+  metadata           Json?    // Additional call metadata
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([callSid])
+  @@index([customerPhone])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Square API request/response logs for debugging and audit
+model SquareApiLog {
+  id          String   @id @default(uuid())
+  endpoint    String   // e.g., "bookings.create", "catalog.list"
+  method      String   // GET, POST, PUT, DELETE
+  requestData Json?
+  responseData Json?
+  statusCode  Int?
+  errorMessage String?
+  duration    Int?     // Request duration in ms
+  createdAt   DateTime @default(now())
+
+  @@index([endpoint])
+  @@index([createdAt])
+}
