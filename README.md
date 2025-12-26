@@ -40,6 +40,16 @@ npm start          # Start the server
 npm install        # Install dependencies
 ```
 
+## Production Deployment (HTTPS)
+
+For HTTPS deployment at signaturebrain.com/admin/:
+
+**⚠️ IMPORTANT**: The HTTPS server block needs to be configured with /admin/ and /ws locations.
+
+See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for complete deployment instructions.
+
+**Quick Fix**: If https://signaturebrain.com/admin/ shows "Cannot GET /admin/", the HTTPS nginx configuration needs the /admin/ location block. See DEPLOYMENT.md for exact configuration.
+
 ## Authentication Protocol
 After connecting, send:
 ```json
