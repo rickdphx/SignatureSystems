@@ -1,14 +1,15 @@
-export default async function AdminSettingsPage() {
-  // TODO: Fetch Square summary from API
-  // const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  // const res = await fetch(`${API_URL}/admin/square/summary`, {
-  //   cache: 'no-store',
-  // });
-  // const data = await res.json();
-  // const summary = data.summary;
+import { api } from '@/lib/api';
 
-  // Mock data for initial setup
-  const mockSummary = {
+export default async function AdminSettingsPage() {
+  let summary;
+  let error: string | null = null;
+
+  try {
+    summary = await api.getSquareSummary();
+  } catch (err) {
+    error = err instanceof Error ? err.message : 'Failed to load Square summary';
+    // Fallback to mock data if API fails
+    summary = {
     location: {
       id: 'L123ABC',
       name: 'The Signature Chair',
@@ -60,53 +61,53 @@ export default async function AdminSettingsPage() {
       environment: 'sandbox',
       domain: 'thesignaturechair.com',
     },
-  };
+    };
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <h1 className="text-4xl font-bold mb-8">Admin Settings</h1>
 
-      {/* TODO: Replace with actual API call */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
-        <p className="text-sm text-yellow-800">
-          <strong>TODO:</strong> This page shows mock data. Uncomment the API
-          fetch code above to load real Square configuration from{' '}
-          <code>/api/admin/square/summary</code>
-        </p>
-      </div>
+      {error && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
+          <p className="text-sm text-yellow-800">
+            <strong>Note:</strong> Could not load live data from API. Showing cached data. Error: {error}
+          </p>
+        </div>
+      )}
 
       {/* Location Info */}
       <div className="card mb-8">
         <h2 className="text-2xl font-bold mb-4">Location Information</h2>
-        {mockSummary.location && (
+        {summary.location && (
           <dl className="grid grid-cols-2 gap-4">
             <div>
               <dt className="text-sm text-gray-600">Location ID</dt>
-              <dd className="font-mono">{mockSummary.location.id}</dd>
+              <dd className="font-mono">{summary.location.id}</dd>
             </div>
             <div>
               <dt className="text-sm text-gray-600">Name</dt>
-              <dd>{mockSummary.location.name}</dd>
+              <dd>{summary.location.name}</dd>
             </div>
             <div>
               <dt className="text-sm text-gray-600">Address</dt>
               <dd>
-                {mockSummary.location.address?.addressLine1}
+                {summary.location.address?.addressLine1}
                 <br />
-                {mockSummary.location.address?.locality},{' '}
-                {mockSummary.location.address?.administrativeDistrictLevel1}{' '}
-                {mockSummary.location.address?.postalCode}
+                {summary.location.address?.locality},{' '}
+                {summary.location.address?.administrativeDistrictLevel1}{' '}
+                {summary.location.address?.postalCode}
               </dd>
             </div>
             <div>
               <dt className="text-sm text-gray-600">Phone</dt>
-              <dd>{mockSummary.location.phoneNumber}</dd>
+              <dd>{summary.location.phoneNumber}</dd>
             </div>
             <div>
               <dt className="text-sm text-gray-600">Status</dt>
               <dd>
                 <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">
-                  {mockSummary.location.status}
+                  {summary.location.status}
                 </span>
               </dd>
             </div>
@@ -118,11 +119,11 @@ export default async function AdminSettingsPage() {
       <div className="card mb-8">
         <h2 className="text-2xl font-bold mb-4">Team Members & Barbers</h2>
         <p className="text-gray-600 mb-4">
-          Total: {mockSummary.teamMembers.total} | Mapped to Barbers:{' '}
-          {mockSummary.teamMembers.mappedToBarbers}
+          Total: {summary.teamMembers.total} | Mapped to Barbers:{' '}
+          {summary.teamMembers.mappedToBarbers}
         </p>
         <div className="space-y-4">
-          {mockSummary.teamMembers.members.map((member) => (
+          {summary.teamMembers.members.map((member) => (
             <div
               key={member.id}
               className="border rounded-lg p-4 flex justify-between items-center"
@@ -157,9 +158,9 @@ export default async function AdminSettingsPage() {
       <div className="card mb-8">
         <h2 className="text-2xl font-bold mb-4">Services</h2>
         <p className="text-gray-600 mb-4">
-          Total Services: {mockSummary.services.totalServices}
+          Total Services: {summary.services.totalServices}
         </p>
-        {mockSummary.services.categories.map((category) => (
+        {summary.services.categories.map((category) => (
           <div key={category.name} className="mb-6">
             <h3 className="text-lg font-bold mb-2">
               {category.name} ({category.serviceCount})
@@ -193,12 +194,12 @@ export default async function AdminSettingsPage() {
           <div>
             <dt className="text-sm text-gray-600">Environment</dt>
             <dd className="font-mono">
-              {mockSummary.configuration.environment}
+              {summary.configuration.environment}
             </dd>
           </div>
           <div>
             <dt className="text-sm text-gray-600">Domain</dt>
-            <dd className="font-mono">{mockSummary.configuration.domain}</dd>
+            <dd className="font-mono">{summary.configuration.domain}</dd>
           </div>
         </dl>
       </div>

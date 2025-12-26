@@ -1,33 +1,20 @@
-export default async function ServicesPage() {
-  // TODO: Fetch services from API
-  // const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  // const res = await fetch(`${API_URL}/public/services`, { cache: 'no-store' });
-  // const data = await res.json();
-  // const services = data.services || [];
+import { api } from '@/lib/api';
+import { ServiceVariation } from '@/lib/types';
 
-  // Mock data for initial setup
-  const mockServices = [
-    {
-      id: '1',
-      name: 'Haircut',
-      description: 'Professional haircut and styling',
-      duration: 30,
-      price: 4000,
-      categoryName: 'Haircuts',
-    },
-    {
-      id: '2',
-      name: 'Beard Trim',
-      description: 'Precision beard trimming and shaping',
-      duration: 20,
-      price: 2500,
-      categoryName: 'Grooming',
-    },
-  ];
+export default async function ServicesPage() {
+  let services: ServiceVariation[] = [];
+  let error: string | null = null;
+
+  try {
+    services = await api.getServices();
+  } catch (err) {
+    error = err instanceof Error ? err.message : 'Failed to load services';
+    console.error('Error fetching services:', err);
+  }
 
   // Group by category
-  const servicesByCategory: { [key: string]: typeof mockServices } = {};
-  mockServices.forEach((service) => {
+  const servicesByCategory: { [key: string]: ServiceVariation[] } = {};
+  services.forEach((service) => {
     const category = service.categoryName || 'Services';
     if (!servicesByCategory[category]) {
       servicesByCategory[category] = [];
@@ -35,24 +22,45 @@ export default async function ServicesPage() {
     servicesByCategory[category].push(service);
   });
 
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h1 className="text-4xl font-bold mb-8">Our Services</h1>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <p className="text-red-800">
+            <strong>Error loading services:</strong> {error}
+          </p>
+          <p className="text-sm text-red-600 mt-2">
+            Make sure the backend API is running and accessible.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (services.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h1 className="text-4xl font-bold mb-8">Our Services</h1>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <p className="text-yellow-800">
+            <strong>No services found.</strong> Sync services from Square using
+            the admin panel.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <h1 className="text-4xl font-bold mb-8">Our Services</h1>
 
-      {/* TODO: Replace with actual API call */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
-        <p className="text-sm text-yellow-800">
-          <strong>TODO:</strong> This page currently shows mock data. Uncomment
-          the API fetch code above to load real services from your backend at{' '}
-          <code>/api/public/services</code>
-        </p>
-      </div>
-
-      {Object.entries(servicesByCategory).map(([category, services]) => (
+      {Object.entries(servicesByCategory).map(([category, categoryServices]) => (
         <div key={category} className="mb-12">
           <h2 className="text-2xl font-bold mb-6">{category}</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((service) => (
+            {categoryServices.map((service) => (
               <div key={service.id} className="card">
                 <h3 className="text-xl font-bold mb-2">{service.name}</h3>
                 {service.description && (
@@ -66,7 +74,7 @@ export default async function ServicesPage() {
                 </div>
                 <a
                   href={`/book?serviceId=${service.id}`}
-                  className="btn btn-primary w-full text-center"
+                  className="btn btn-primary w-full text-center block"
                 >
                   Book Now
                 </a>
