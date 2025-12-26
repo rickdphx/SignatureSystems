@@ -19,23 +19,47 @@ const clients = new Map();
 wss.on('connection', (ws, req) => {
   const clientIP = req.socket.remoteAddress;
   console.log(`[${new Date().toISOString()}] New connection from ${clientIP}`);
+  console.log(`[${new Date().toISOString()}] URL: ${req.url}`);
+
+  // Parse URL to get token from query parameter
+  const url = new URL(req.url, 'http://localhost');
+  const tokenFromUrl = url.searchParams.get('token');
+
+  // Authenticate from URL parameter if provided
+  if (tokenFromUrl) {
+    if (tokenFromUrl === ADMIN_TOKEN) {
+      clients.set(ws, { authenticated: true, connectedAt: Date.now() });
+      ws.send(JSON.stringify({
+        type: 'auth_success',
+        message: 'Authentication successful'
+      }));
+      console.log(`[${new Date().toISOString()}] Client authenticated via URL parameter`);
+      startTerminalPush(ws);
+    } else {
+      console.log(`[${new Date().toISOString()}] Authentication failed - invalid token`);
+      ws.send(JSON.stringify({
+        type: 'auth_failed',
+        message: 'Invalid token'
+      }));
+      ws.close();
+      return;
+    }
+  }
 
   ws.on('message', (message) => {
     try {
       console.log(`[${new Date().toISOString()}] Received message:`, message.toString());
       const data = JSON.parse(message);
 
-      // Handle token authentication
-      if (data.type === 'auth' && data.token) {
+      // Handle token authentication via message (fallback)
+      if (data.type === 'auth' && data.token && !clients.has(ws)) {
         if (data.token === ADMIN_TOKEN) {
           clients.set(ws, { authenticated: true, connectedAt: Date.now() });
           ws.send(JSON.stringify({
             type: 'auth_success',
             message: 'Authentication successful'
           }));
-          console.log(`[${new Date().toISOString()}] Client authenticated successfully`);
-
-          // Start sending terminal responses
+          console.log(`[${new Date().toISOString()}] Client authenticated via message`);
           startTerminalPush(ws);
         } else {
           console.log(`[${new Date().toISOString()}] Authentication failed - invalid token`);
