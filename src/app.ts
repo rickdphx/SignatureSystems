@@ -13,6 +13,7 @@ import bookingRoutes from './routes/booking.routes';
 import publicRoutes from './routes/public.routes';
 import voiceRoutes from './routes/voice.routes';
 import squareRoutes from './routes/square.routes';
+import adminRoutes from './routes/admin.routes';
 
 const app: Application = express();
 
@@ -22,7 +23,8 @@ app.use(helmet());
 // CORS configuration
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   'http://localhost:3000',
-  'https://signaturechair.com',
+  'http://localhost:3001',
+  'https://thesignaturechair.com',
 ];
 
 app.use(
@@ -73,7 +75,7 @@ app.get('/health', (req, res) => {
     success: true,
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    service: 'signaturechair-booking-backend',
+    service: 'thesignaturechair-booking-backend',
   });
 });
 
@@ -85,14 +87,15 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/voice', voiceRoutes);
 app.use('/api/square', squareRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: 'SignatureChair Booking API',
+    message: 'The Signature Chair Booking API',
     version: '1.0.0',
-    domain: 'signaturechair.com',
+    domain: 'thesignaturechair.com',
     documentation: '/api/docs',
   });
 });

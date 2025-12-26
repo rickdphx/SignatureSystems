@@ -5,10 +5,13 @@ import logger from '../utils/logger';
 export interface ServiceVariation {
   id: string;
   name: string;
+  description?: string;
   duration: number; // in minutes
   price: number; // in cents
   version: bigint;
   itemName?: string;
+  categoryName?: string;
+  categoryId?: string;
 }
 
 /**
@@ -25,6 +28,23 @@ export async function getAllServiceVariations(): Promise<ServiceVariation[]> {
       if (!item.itemData?.variations) continue;
 
       const itemName = item.itemData.name || 'Unknown Service';
+      const description = item.itemData.description || undefined;
+
+      // Extract category information
+      let categoryName: string | undefined;
+      let categoryId: string | undefined;
+
+      // Square stores category in itemData.categoryId
+      if (item.itemData.categoryId) {
+        categoryId = item.itemData.categoryId;
+        // Category name would need to be fetched separately, for now use a default mapping
+        categoryName = getCategoryNameFromId(item.itemData.categoryId);
+      }
+
+      // Fallback: use itemName as category if no explicit category
+      if (!categoryName) {
+        categoryName = 'Services';
+      }
 
       for (const variation of item.itemData.variations) {
         if (!variation.id || !variation.version) continue;
@@ -49,10 +69,13 @@ export async function getAllServiceVariations(): Promise<ServiceVariation[]> {
         variations.push({
           id: variation.id,
           name,
+          description,
           duration,
           price,
           version: variation.version,
           itemName,
+          categoryName,
+          categoryId,
         });
       }
     }
@@ -97,4 +120,38 @@ export async function getBarberServiceVariations(
   );
 
   return allVariations.filter((v) => assignedVariationIds.has(v.id));
+}
+
+/**
+ * Helper function to map category IDs to names
+ * This is a simple mapping - in production you would fetch actual category objects from Square
+ */
+function getCategoryNameFromId(categoryId: string): string {
+  // Default category mapping
+  const categoryMap: { [key: string]: string } = {
+    // Add your actual Square category IDs here
+    // Example: 'CATEGORY_ID_123': 'Haircuts'
+  };
+
+  return categoryMap[categoryId] || 'Services';
+}
+
+/**
+ * Get services grouped by category
+ */
+export async function getServicesByCategory(): Promise<{
+  [categoryName: string]: ServiceVariation[];
+}> {
+  const services = await getAllServiceVariations();
+  const grouped: { [categoryName: string]: ServiceVariation[] } = {};
+
+  for (const service of services) {
+    const category = service.categoryName || 'Services';
+    if (!grouped[category]) {
+      grouped[category] = [];
+    }
+    grouped[category].push(service);
+  }
+
+  return grouped;
 }
