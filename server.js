@@ -17,6 +17,16 @@ app.get('/ben', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'ben.html'));
 });
 
+// Serve standalone version directly
+app.get('/standalone', (req, res) => {
+  res.sendFile(path.join(__dirname, 'DOWNLOAD_THIS.html'));
+});
+
+// Download endpoint
+app.get('/download', (req, res) => {
+  res.download(path.join(__dirname, 'DOWNLOAD_THIS.html'), 'ben-console.html');
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Ben Console Server running on http://localhost:${PORT}`);
   console.log(`📺 Access Ben Console at http://localhost:${PORT}/ben`);
