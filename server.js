@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 80;
 
 // Serve static files from public directory
 app.use(express.static('public'));
@@ -15,6 +15,16 @@ app.get('/', (req, res) => {
 // Ben console route
 app.get('/ben', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'ben.html'));
+});
+
+// Serve standalone version directly
+app.get('/standalone', (req, res) => {
+  res.sendFile(path.join(__dirname, 'DOWNLOAD_THIS.html'));
+});
+
+// Download endpoint
+app.get('/download', (req, res) => {
+  res.download(path.join(__dirname, 'DOWNLOAD_THIS.html'), 'ben-console.html');
 });
 
 app.listen(PORT, '0.0.0.0', () => {
