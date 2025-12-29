@@ -1,16 +1,17 @@
 const express = require('express');
 const basicAuth = require('express-basic-auth');
 const path = require('path');
+const basicAuth = require('express-basic-auth');
 
 const app = express();
 const PORT = process.env.PORT || 80;
 
-// Basic auth middleware
-const auth = basicAuth({
-  users: { 'Yahu86': '2121' },
-  challenge: true,
-  realm: 'Ben Console Access'
-});
+// Basic authentication
+app.use(basicAuth({
+    users: { 'Yahu86': '2121' },
+    challenge: true,
+    realm: 'Ben Console Access'
+}));
 
 // Serve static files from public directory
 app.use(express.static('public'));
@@ -32,6 +33,15 @@ app.get('/bg/login.html', auth, (req, res) => {
 
 // Ben console route
 app.get('/ben', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ben.html'));
+});
+
+// Admin route - serve Ben Console
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ben.html'));
+});
+
+app.get('/admin/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'ben.html'));
 });
 
