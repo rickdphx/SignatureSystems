@@ -543,35 +543,87 @@
     </div>
 
     <script>
+        const API_BASE = 'http://localhost:3000/api';
+
         function togglePassword(id) {
             const input = document.getElementById(id);
             input.type = input.type === 'password' ? 'text' : 'password';
         }
 
-        function saveConfig() {
+        async function saveConfig() {
+            const config = {
+                aiModels: {
+                    grok: {
+                        apiKey: document.getElementById('grok-key').value,
+                        model: document.getElementById('grok-model').value
+                    },
+                    claude: {
+                        apiKey: document.getElementById('claude-key').value,
+                        model: document.getElementById('claude-model').value
+                    },
+                    systemInstructions: document.getElementById('system-instructions').value
+                },
+                benIntegration: {
+                    serviceUrl: document.getElementById('ben-url').value,
+                    apiToken: document.getElementById('ben-token').value,
+                    webhookUrl: document.getElementById('webhook-url').value,
+                    config: document.getElementById('ben-config').value ? JSON.parse(document.getElementById('ben-config').value) : {}
+                }
+            };
+
             const logs = document.getElementById('logs');
             const timestamp = new Date().toLocaleTimeString();
-            const line = `<div class="terminal-line"><span class="timestamp">[${timestamp}]</span><span class="output success">✓ Configuration saved successfully</span></div>`;
-            logs.innerHTML += line;
-            logs.scrollTop = logs.scrollHeight;
-            alert('Configuration saved successfully!\n\nNote: Connect backend API for full persistence.');
+
+            try {
+                const response = await fetch(`${API_BASE}/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const line = `<div class="terminal-line"><span class="timestamp">[${timestamp}]</span><span class="output success">✓ Configuration saved successfully</span></div>`;
+                    logs.innerHTML += line;
+                    logs.scrollTop = logs.scrollHeight;
+                    alert('Configuration saved successfully!');
+                } else {
+                    throw new Error(result.error || 'Failed to save configuration');
+                }
+            } catch (err) {
+                const line = `<div class="terminal-line"><span class="timestamp">[${timestamp}]</span><span class="output error">✗ Error: ${err.message}</span></div>`;
+                logs.innerHTML += line;
+                logs.scrollTop = logs.scrollHeight;
+                alert('Error saving configuration: ' + err.message);
+            }
         }
 
-        function testConnection() {
+        async function testConnection() {
             const logs = document.getElementById('logs');
             const timestamp = new Date().toLocaleTimeString();
             const line = `<div class="terminal-line"><span class="timestamp">[${timestamp}]</span><span class="output">🔌 Testing BEN service connection...</span></div>`;
             logs.innerHTML += line;
             logs.scrollTop = logs.scrollHeight;
 
-            setTimeout(() => {
-                const resultLine = `<div class="terminal-line"><span class="timestamp">[${new Date().toLocaleTimeString()}]</span><span class="output warning">⚠ Connect backend API to enable connection testing</span></div>`;
+            try {
+                const response = await fetch(`${API_BASE}/test-connection`, { method: 'POST' });
+                const result = await response.json();
+
+                const resultLine = result.success
+                    ? `<div class="terminal-line"><span class="timestamp">[${new Date().toLocaleTimeString()}]</span><span class="output success">✓ ${result.message}</span></div>`
+                    : `<div class="terminal-line"><span class="timestamp">[${new Date().toLocaleTimeString()}]</span><span class="output error">✗ ${result.message}</span></div>`;
+
                 logs.innerHTML += resultLine;
                 logs.scrollTop = logs.scrollHeight;
-            }, 1000);
+            } catch (err) {
+                const resultLine = `<div class="terminal-line"><span class="timestamp">[${new Date().toLocaleTimeString()}]</span><span class="output error">✗ Connection failed: ${err.message}</span></div>`;
+                logs.innerHTML += resultLine;
+                logs.scrollTop = logs.scrollHeight;
+            }
         }
 
-        function submitPrompt() {
+        async function submitPrompt() {
             const prompt = document.getElementById('ben-prompt').value.trim();
             const mode = document.getElementById('ben-mode').value;
 
@@ -594,13 +646,56 @@
                 </div>
                 <div class="terminal-line">
                     <span class="timestamp">[Status]</span>
-                    <span class="output warning">⚠ Connect backend API to process prompts</span>
+                    <span class="output warning">⏳ Processing...</span>
                 </div>
             `;
 
             // Log to system logs
             const logs = document.getElementById('logs');
             logs.innerHTML += `<div class="terminal-line"><span class="timestamp">[${timestamp}]</span><span class="output">BEN Console prompt submitted - Mode: ${mode}</span></div>`;
+            logs.scrollTop = logs.scrollHeight;
+
+            try {
+                const response = await fetch(`${API_BASE}/ben/console`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, mode })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    output.innerHTML = `
+                        <div class="terminal-line">
+                            <span class="timestamp">[${timestamp}]</span>
+                            <span class="output">Mode: ${mode.toUpperCase()}</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="timestamp">[Input]</span>
+                            <span class="output">${prompt}</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="timestamp">[Response]</span>
+                            <span class="output success">${result.response}</span>
+                        </div>
+                    `;
+
+                    logs.innerHTML += `<div class="terminal-line"><span class="timestamp">[${new Date().toLocaleTimeString()}]</span><span class="output success">✓ BEN response generated</span></div>`;
+                } else {
+                    throw new Error(result.error || 'Failed to process prompt');
+                }
+            } catch (err) {
+                output.innerHTML += `
+                    <div class="terminal-line">
+                        <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                        <span class="output error">✗ Error: ${err.message}</span>
+                    </div>
+                `;
+
+                logs.innerHTML += `<div class="terminal-line"><span class="timestamp">[${new Date().toLocaleTimeString()}]</span><span class="output error">✗ Error processing prompt: ${err.message}</span></div>`;
+            }
+
+            output.scrollTop = output.scrollHeight;
             logs.scrollTop = logs.scrollHeight;
         }
 
@@ -617,11 +712,40 @@
             }
         });
 
-        // Auto-log initialization
-        window.addEventListener('load', function() {
+        // Auto-log initialization and load config
+        window.addEventListener('load', async function() {
             const logs = document.getElementById('logs');
             const timestamp = new Date().toLocaleTimeString();
             logs.innerHTML += `<div class="terminal-line"><span class="timestamp">[${timestamp}]</span><span class="output success">✓ All systems operational</span></div>`;
+
+            // Load existing configuration
+            try {
+                const response = await fetch(`${API_BASE}/config`);
+                const config = await response.json();
+
+                if (config.aiModels) {
+                    document.getElementById('grok-key').value = config.aiModels.grok.apiKey || '';
+                    document.getElementById('grok-model').value = config.aiModels.grok.model || 'grok-beta';
+                    document.getElementById('claude-key').value = config.aiModels.claude.apiKey || '';
+                    document.getElementById('claude-model').value = config.aiModels.claude.model || 'claude-3-5-sonnet-20241022';
+                    document.getElementById('system-instructions').value = config.aiModels.systemInstructions || '';
+                }
+
+                if (config.benIntegration) {
+                    document.getElementById('ben-url').value = config.benIntegration.serviceUrl || '';
+                    document.getElementById('ben-token').value = config.benIntegration.apiToken || '';
+                    document.getElementById('webhook-url').value = config.benIntegration.webhookUrl || '';
+                    if (config.benIntegration.config) {
+                        document.getElementById('ben-config').value = JSON.stringify(config.benIntegration.config, null, 2);
+                    }
+                }
+
+                logs.innerHTML += `<div class="terminal-line"><span class="timestamp">[${new Date().toLocaleTimeString()}]</span><span class="output success">✓ Configuration loaded</span></div>`;
+            } catch (err) {
+                logs.innerHTML += `<div class="terminal-line"><span class="timestamp">[${new Date().toLocaleTimeString()}]</span><span class="output warning">⚠ Using default configuration</span></div>`;
+            }
+
+            logs.scrollTop = logs.scrollHeight;
         });
     </script>
 </body>
