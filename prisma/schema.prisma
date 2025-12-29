@@ -140,3 +140,234 @@ model SquareApiLog {
   @@index([endpoint])
   @@index([createdAt])
 }
+
+// ============================================
+// TRADING BOT MODELS
+// ============================================
+
+// Broker Account (Schwab, TD Ameritrade, etc.)
+model BrokerAccount {
+  id                String   @id @default(uuid())
+  accountNumber     String   @unique
+  accountType       String   // MARGIN, CASH, IRA
+  brokerName        String   @default("SCHWAB") // SCHWAB, TD_AMERITRADE, INTERACTIVE_BROKERS
+  isPaperTrading    Boolean  @default(true)
+  isActive          Boolean  @default(true)
+  accessToken       String?  // Encrypted access token
+  refreshToken      String?  // Encrypted refresh token
+  tokenExpiresAt    DateTime?
+  accountValue      Float    @default(0)
+  cashBalance       Float    @default(0)
+  buyingPower       Float    @default(0)
+  lastSyncedAt      DateTime?
+  metadata          Json?    // Additional broker-specific data
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  positions         Position[]
+  trades            Trade[]
+  orders            Order[]
+  portfolios        Portfolio[]
+
+  @@index([accountNumber])
+  @@index([brokerName])
+  @@index([isActive])
+}
+
+// Portfolio (can track multiple strategies)
+model Portfolio {
+  id                String   @id @default(uuid())
+  name              String
+  description       String?
+  brokerAccountId   String
+  initialCapital    Float
+  currentValue      Float    @default(0)
+  totalPnL          Float    @default(0)
+  totalPnLPercent   Float    @default(0)
+  profitFactor      Float?   // Gross profits / Gross losses
+  winRate           Float?   // % of winning trades
+  sharpeRatio       Float?   // Risk-adjusted return
+  maxDrawdown       Float?   // Maximum peak-to-trough decline
+  totalTrades       Int      @default(0)
+  winningTrades     Int      @default(0)
+  losingTrades      Int      @default(0)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  brokerAccount     BrokerAccount @relation(fields: [brokerAccountId], references: [id], onDelete: Cascade)
+  positions         Position[]
+  trades            Trade[]
+  signals           Signal[]
+
+  @@index([brokerAccountId])
+  @@index([isActive])
+}
+
+// Position (current holdings)
+model Position {
+  id                String   @id @default(uuid())
+  portfolioId       String
+  brokerAccountId   String
+  symbol            String   // e.g., "AAPL", "TSLA"
+  assetType         String   // STOCK, OPTION, CRYPTO, FOREX
+  quantity          Float
+  averagePrice      Float
+  currentPrice      Float    @default(0)
+  marketValue       Float    @default(0)
+  costBasis         Float
+  unrealizedPnL     Float    @default(0)
+  unrealizedPnLPercent Float @default(0)
+  side              String   // LONG, SHORT
+  openedAt          DateTime
+  lastUpdatedAt     DateTime @updatedAt
+  metadata          Json?    // Additional data (Greeks for options, etc.)
+
+  // Relations
+  portfolio         Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  brokerAccount     BrokerAccount @relation(fields: [brokerAccountId], references: [id], onDelete: Cascade)
+  trades            Trade[]
+
+  @@unique([portfolioId, symbol])
+  @@index([portfolioId])
+  @@index([brokerAccountId])
+  @@index([symbol])
+  @@index([assetType])
+}
+
+// Trade (executed trades)
+model Trade {
+  id                String   @id @default(uuid())
+  portfolioId       String?
+  brokerAccountId   String
+  positionId        String?
+  orderId           String?
+  symbol            String
+  assetType         String   // STOCK, OPTION, CRYPTO, FOREX
+  side              String   // BUY, SELL
+  quantity          Float
+  price             Float
+  commission        Float    @default(0)
+  fees              Float    @default(0)
+  totalAmount       Float    // price * quantity + commission + fees
+  realizedPnL       Float?   // For closing trades
+  executedAt        DateTime
+  strategy          String?  // Strategy name that triggered this trade
+  signalId          String?  // Related signal
+  notes             String?
+  metadata          Json?    // Broker trade details
+  createdAt         DateTime @default(now())
+
+  // Relations
+  portfolio         Portfolio? @relation(fields: [portfolioId], references: [id], onDelete: SetNull)
+  brokerAccount     BrokerAccount @relation(fields: [brokerAccountId], references: [id], onDelete: Cascade)
+  position          Position? @relation(fields: [positionId], references: [id], onDelete: SetNull)
+  order             Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([portfolioId])
+  @@index([brokerAccountId])
+  @@index([symbol])
+  @@index([executedAt])
+  @@index([strategy])
+}
+
+// Order (pending and executed orders)
+model Order {
+  id                String   @id @default(uuid())
+  brokerAccountId   String
+  brokerOrderId     String?  @unique // Broker's order ID
+  symbol            String
+  assetType         String   // STOCK, OPTION, CRYPTO, FOREX
+  side              String   // BUY, SELL
+  orderType         String   // MARKET, LIMIT, STOP, STOP_LIMIT
+  timeInForce       String   @default("DAY") // DAY, GTC, IOC, FOK
+  quantity          Float
+  filledQuantity    Float    @default(0)
+  limitPrice        Float?
+  stopPrice         Float?
+  averageFillPrice  Float?
+  status            String   @default("PENDING") // PENDING, WORKING, FILLED, PARTIALLY_FILLED, CANCELLED, REJECTED, EXPIRED
+  rejectedReason    String?
+  placedAt          DateTime @default(now())
+  filledAt          DateTime?
+  cancelledAt       DateTime?
+  expiresAt         DateTime?
+  strategy          String?  // Strategy that created this order
+  signalId          String?  // Related signal
+  metadata          Json?    // Broker-specific order details
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  brokerAccount     BrokerAccount @relation(fields: [brokerAccountId], references: [id], onDelete: Cascade)
+  trades            Trade[]
+
+  @@index([brokerAccountId])
+  @@index([symbol])
+  @@index([status])
+  @@index([placedAt])
+}
+
+// Signal (trading signals/alerts)
+model Signal {
+  id                String   @id @default(uuid())
+  portfolioId       String?
+  symbol            String
+  assetType         String   // STOCK, OPTION, CRYPTO, FOREX
+  signalType        String   // BUY, SELL, HOLD, ALERT
+  strategy          String   // Strategy that generated this signal
+  strength          Float?   // Signal strength (0-100)
+  price             Float?   // Price when signal generated
+  targetPrice       Float?
+  stopLoss          Float?
+  confidence        Float?   // Confidence level (0-100)
+  reason            String?  // Why this signal was generated
+  isActedOn         Boolean  @default(false)
+  actedOnAt         DateTime?
+  expiresAt         DateTime?
+  metadata          Json?    // Additional signal data
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  portfolio         Portfolio? @relation(fields: [portfolioId], references: [id], onDelete: SetNull)
+
+  @@index([portfolioId])
+  @@index([symbol])
+  @@index([signalType])
+  @@index([strategy])
+  @@index([isActedOn])
+  @@index([createdAt])
+}
+
+// Market Data Cache (for performance)
+model MarketData {
+  id                String   @id @default(uuid())
+  symbol            String   @unique
+  assetType         String   // STOCK, OPTION, CRYPTO, FOREX
+  lastPrice         Float
+  bidPrice          Float?
+  askPrice          Float?
+  volume            Int?
+  open              Float?
+  high              Float?
+  low               Float?
+  previousClose     Float?
+  change            Float?
+  changePercent     Float?
+  marketCap         Float?
+  pe                Float?   // Price-to-Earnings ratio
+  dividendYield     Float?
+  week52High        Float?
+  week52Low         Float?
+  lastUpdatedAt     DateTime
+  metadata          Json?    // Additional market data
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([symbol])
+  @@index([assetType])
+  @@index([lastUpdatedAt])
+}

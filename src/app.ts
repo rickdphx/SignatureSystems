@@ -14,6 +14,7 @@ import publicRoutes from './routes/public.routes';
 import voiceRoutes from './routes/voice.routes';
 import squareRoutes from './routes/square.routes';
 import adminRoutes from './routes/admin.routes';
+import tradingRoutes from './routes/trading.routes';
 
 const app: Application = express();
 
@@ -88,6 +89,7 @@ app.use('/api/public', publicRoutes);
 app.use('/api/voice', voiceRoutes);
 app.use('/api/square', squareRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/trading', tradingRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
