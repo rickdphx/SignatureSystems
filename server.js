@@ -5,9 +5,9 @@ const basicAuth = require('express-basic-auth');
 const app = express();
 const PORT = process.env.PORT || 80;
 
-// Basic authentication - CHANGE THESE CREDENTIALS
+// Basic authentication
 app.use(basicAuth({
-    users: { 'admin': 'changeme123' },
+    users: { 'Yahu86': '2121' },
     challenge: true,
     realm: 'Ben Console Access'
 }));
