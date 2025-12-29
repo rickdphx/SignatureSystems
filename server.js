@@ -25,6 +25,15 @@ app.get('/ben', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'ben.html'));
 });
 
+// Admin route - serve Ben Console
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ben.html'));
+});
+
+app.get('/admin/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ben.html'));
+});
+
 // Serve standalone version directly
 app.get('/standalone', (req, res) => {
   res.sendFile(path.join(__dirname, 'DOWNLOAD_THIS.html'));
