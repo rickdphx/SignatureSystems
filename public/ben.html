@@ -654,10 +654,17 @@
             line-height: 1.5;
         }
 
-        /* Responsive */
+        /* Responsive - Sidebar always visible */
         @media (max-width: 960px) {
+            .app-shell {
+                flex-direction: column;
+            }
+
             .sidebar {
-                display: none;
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #1a2332;
+                padding: 16px;
             }
 
             .main-body {
