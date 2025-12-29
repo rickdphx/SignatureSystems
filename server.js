@@ -1,4 +1,5 @@
 const express = require('express');
+const basicAuth = require('express-basic-auth');
 const path = require('path');
 const basicAuth = require('express-basic-auth');
 
@@ -18,6 +19,16 @@ app.use(express.static('public'));
 // Root route - serve ben.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'ben.html'));
+});
+
+// BG route with basic auth - serve ben.html
+app.get('/bg/', auth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ben.html'));
+});
+
+// BG login route - redirects to /bg/
+app.get('/bg/login.html', auth, (req, res) => {
+  res.redirect('/bg/');
 });
 
 // Ben console route
@@ -47,5 +58,6 @@ app.get('/download', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Ben Console Server running on http://localhost:${PORT}`);
   console.log(`📺 Access Ben Console at http://localhost:${PORT}/ben`);
+  console.log(`🔐 BG Console at http://localhost:${PORT}/bg/ (protected)`);
   console.log(`🌐 Also accessible at http://0.0.0.0:${PORT}`);
 });
