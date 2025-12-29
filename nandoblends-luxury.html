@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nando Blends - The Signature Chair</title>
+  <title>Nando Blends - Premium Grooming</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
     * {
@@ -14,7 +14,7 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #0A1929 0%, #2f445d 30%, #6B1C23 100%);
+      background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0d0d0d 100%);
       color: #ffffff;
       min-height: 100vh;
       line-height: 1.6;
@@ -33,7 +33,7 @@
       text-align: center;
       margin-bottom: 20px;
       letter-spacing: -1px;
-      background: linear-gradient(135deg, #D4AF37, #facc15);
+      background: linear-gradient(135deg, #ffffff, #cccccc);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -42,7 +42,7 @@
     .subtitle {
       text-align: center;
       font-size: 1.1rem;
-      color: #ddd;
+      color: #aaa;
       margin-bottom: 60px;
       font-weight: 300;
       letter-spacing: 2px;
@@ -50,18 +50,18 @@
     }
 
     .form-card {
-      background: rgba(47, 68, 93, 0.4);
+      background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(212, 175, 55, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 20px;
       padding: 60px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
       transition: all 0.3s ease;
     }
 
     .form-card:hover {
-      border-color: rgba(212, 175, 55, 0.6);
-      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.7);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9);
     }
 
     .form-group {
@@ -74,7 +74,7 @@
       font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 3px;
-      color: #D4AF37;
+      color: #ffffff;
       margin-bottom: 12px;
       font-weight: 600;
     }
@@ -82,9 +82,9 @@
     input,
     textarea {
       width: 100%;
-      background: rgba(10, 25, 41, 0.6);
+      background: rgba(0, 0, 0, 0.4);
       border: none;
-      border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
       padding: 16px 0;
       font-size: 1.1rem;
       color: #ffffff;
@@ -95,8 +95,8 @@
 
     input:focus,
     textarea:focus {
-      background: rgba(10, 25, 41, 0.9);
-      border-bottom-color: #D4AF37;
+      background: rgba(0, 0, 0, 0.6);
+      border-bottom-color: #ffffff;
       padding-left: 12px;
     }
 
@@ -112,9 +112,9 @@
 
     .submit-btn {
       width: 100%;
-      background: linear-gradient(135deg, #6B1C23, #9f2f4a);
-      border: 2px solid #D4AF37;
-      color: #ffffff;
+      background: linear-gradient(135deg, #ffffff, #cccccc);
+      border: 2px solid #ffffff;
+      color: #000000;
       padding: 20px;
       font-size: 0.9rem;
       text-transform: uppercase;
@@ -128,10 +128,9 @@
     }
 
     .submit-btn:hover {
-      background: linear-gradient(135deg, #9f2f4a, #6B1C23);
+      background: linear-gradient(135deg, #cccccc, #ffffff);
       transform: translateY(-3px);
-      box-shadow: 0 15px 40px rgba(212, 175, 55, 0.4);
-      border-color: #facc15;
+      box-shadow: 0 15px 40px rgba(255, 255, 255, 0.3);
     }
 
     .submit-btn:active {
@@ -141,8 +140,8 @@
     .success-message {
       text-align: center;
       padding: 80px 40px;
-      background: rgba(10, 25, 41, 0.6);
-      border: 2px solid #D4AF37;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #ffffff;
       border-radius: 20px;
       animation: fadeIn 0.5s ease;
     }
@@ -150,21 +149,21 @@
     .success-message h2 {
       font-family: 'Playfair Display', serif;
       font-size: 2.5rem;
-      color: #D4AF37;
+      color: #ffffff;
       margin-bottom: 20px;
     }
 
     .success-message p {
       font-size: 1.1rem;
-      color: #ddd;
+      color: #ccc;
       margin-bottom: 40px;
       line-height: 1.8;
     }
 
     .reset-btn {
       background: transparent;
-      border: 1px solid #D4AF37;
-      color: #D4AF37;
+      border: 1px solid #ffffff;
+      color: #ffffff;
       padding: 12px 40px;
       font-size: 0.85rem;
       text-transform: uppercase;
@@ -175,22 +174,22 @@
     }
 
     .reset-btn:hover {
-      background: #D4AF37;
-      color: #0A1929;
+      background: #ffffff;
+      color: #000000;
     }
 
     .location-info {
       margin-top: 80px;
       text-align: center;
       padding-top: 60px;
-      border-top: 1px solid rgba(212, 175, 55, 0.3);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .location-label {
       font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 3px;
-      color: #D4AF37;
+      color: #ffffff;
       margin-bottom: 16px;
       font-weight: 600;
     }
@@ -208,7 +207,7 @@
     }
 
     .back-link a {
-      color: #D4AF37;
+      color: #ffffff;
       text-decoration: none;
       font-size: 0.9rem;
       text-transform: uppercase;
@@ -219,7 +218,7 @@
     }
 
     .back-link a:hover {
-      border-bottom-color: #D4AF37;
+      border-bottom-color: #ffffff;
     }
 
     @keyframes fadeIn {
@@ -317,52 +316,18 @@
 
       const formContainer = document.getElementById('formContainer');
 
-      formContainer.innerHTML = `
-        <div class="success-message">
-          <h2>Thank You!</h2>
-          <p>We've received your message and will get back to you shortly.<br>Our team typically responds within 24 hours.</p>
-          <button onclick="resetForm()" class="reset-btn">Send Another Message</button>
-        </div>
-      `;
+      formContainer.innerHTML = '<div class="success-message"><h2>Thank You!</h2><p>We\'ve received your message and will get back to you shortly.<br>Our team typically responds within 24 hours.</p><button onclick="resetForm()" class="reset-btn">Send Another Message</button></div>';
     });
 
     function resetForm() {
       const formContainer = document.getElementById('formContainer');
 
-      formContainer.innerHTML = `
-        <div class="form-card">
-          <form id="contactForm">
-            <div class="form-group">
-              <label for="name">Your Name</label>
-              <input type="text" id="name" name="name" required placeholder="Enter your full name" />
-            </div>
+      formContainer.innerHTML = '<div class="form-card"><form id="contactForm"><div class="form-group"><label for="name">Your Name</label><input type="text" id="name" name="name" required placeholder="Enter your full name" /></div><div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" required placeholder="your@email.com" /></div><div class="form-group"><label for="message">Your Message</label><textarea id="message" name="message" required placeholder="Tell us what you\'re looking for..."></textarea></div><button type="submit" class="submit-btn">Send Message</button></form></div>';
 
-            <div class="form-group">
-              <label for="email">Email Address</label>
-              <input type="email" id="email" name="email" required placeholder="your@email.com" />
-            </div>
-
-            <div class="form-group">
-              <label for="message">Your Message</label>
-              <textarea id="message" name="message" required placeholder="Tell us what you're looking for..."></textarea>
-            </div>
-
-            <button type="submit" class="submit-btn">Send Message</button>
-          </form>
-        </div>
-      `;
-
-      // Re-attach event listener
       document.getElementById('contactForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const formContainer = document.getElementById('formContainer');
-        formContainer.innerHTML = `
-          <div class="success-message">
-            <h2>Thank You!</h2>
-            <p>We've received your message and will get back to you shortly.<br>Our team typically responds within 24 hours.</p>
-            <button onclick="resetForm()" class="reset-btn">Send Another Message</button>
-          </div>
-        `;
+        formContainer.innerHTML = '<div class="success-message"><h2>Thank You!</h2><p>We\'ve received your message and will get back to you shortly.<br>Our team typically responds within 24 hours.</p><button onclick="resetForm()" class="reset-btn">Send Another Message</button></div>';
       });
     }
   </script>

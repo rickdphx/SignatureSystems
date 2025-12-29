@@ -61,7 +61,7 @@ const server = http.createServer((req, res) => {
   }
 
   // Route: Nando Blends contact page
-  if (url === '/nandoblends' || url === '/nandoblends.html') {
+  if (url === '/nando.blends' || url === '/nando.blends.html') {
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(nandoBlendsHTML);
     return;
@@ -98,7 +98,7 @@ server.listen(PORT, () => {
   console.log('Signature Chair frontend running on port ' + PORT);
   console.log('Routes:');
   console.log('  - / (home)');
-  console.log('  - /nandoblends (contact page)');
+  console.log('  - /nando.blends (Nando Blends contact - black & white theme)');
   console.log('  - /:barber (barber profile)');
   console.log('  - /:barber/book (booking flow)');
 });
