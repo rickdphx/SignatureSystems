@@ -1,57 +1,146 @@
 #!/bin/bash
-# Deploy Ben Console to production server
+set -e
 
-echo "🚀 Deploying Ben Console..."
+echo "=================================="
+echo "The Signature Chair - Deployment"
+echo "=================================="
+echo ""
 
-# Configuration - UPDATE THESE
-SERVER_IP="18.118.103.251"
-SERVER_USER="ubuntu"  # or your SSH username
-SSH_KEY="~/.ssh/your-key.pem"  # path to your SSH key
-DEPLOY_PATH="/var/www/signaturebrain/admin-ui"
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
-# Create deployment package
-echo "📦 Creating deployment package..."
-tar -czf ben-console-deploy.tar.gz \
-  server.js \
-  package.json \
-  public/ \
-  index.html \
-  DOWNLOAD_THIS.html
+# Check if we're on EC2 or local
+if [ -f "/.dockerenv" ] || [ -d "/var/www" ]; then
+    ENV="production"
+    echo -e "${GREEN}Detected: Production/EC2 environment${NC}"
+else
+    ENV="development"
+    echo -e "${YELLOW}Detected: Local development environment${NC}"
+fi
 
-echo "📤 Uploading to server..."
-scp -i $SSH_KEY ben-console-deploy.tar.gz $SERVER_USER@$SERVER_IP:/tmp/
+echo ""
+echo "What would you like to deploy?"
+echo "1) Backend only"
+echo "2) Frontend only"
+echo "3) Both (Full deployment)"
+echo "4) Exit"
+read -p "Enter choice [1-4]: " choice
 
-echo "⚙️  Installing on server..."
-ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP << 'ENDSSH'
-  # Create deployment directory
-  sudo mkdir -p /var/www/signaturebrain/admin-ui
-  cd /var/www/signaturebrain/admin-ui
+case $choice in
+    1)
+        echo ""
+        echo "=== Deploying Backend ==="
+        cd /var/www/signature-chair-backend 2>/dev/null || cd backend
 
-  # Extract files
-  sudo tar -xzf /tmp/ben-console-deploy.tar.gz -C .
-  sudo chown -R www-data:www-data .
+        echo "→ Pulling latest code..."
+        git pull
 
-  # Install dependencies
-  sudo npm install --production
+        echo "→ Installing dependencies..."
+        npm install
 
-  # Stop old BEN Control Center (if running)
-  sudo pkill -f "node.*admin" || true
+        echo "→ Generating Prisma client..."
+        npx prisma generate
 
-  # Start new Ben Console with PM2 (or create systemd service)
-  sudo npm install -g pm2
-  sudo pm2 delete ben-console || true
-  sudo pm2 start server.js --name ben-console
-  sudo pm2 save
-  sudo pm2 startup
+        echo "→ Running migrations..."
+        npx prisma migrate deploy
 
-  # Cleanup
-  rm /tmp/ben-console-deploy.tar.gz
+        echo "→ Building TypeScript..."
+        npm run build
 
-  echo "✅ Ben Console deployed successfully!"
-  echo "📍 Access at: http://signaturebrain.com/admin/"
-  echo "🔐 Username: Yahu86"
-  echo "🔐 Password: 2121"
-ENDSSH
+        if [ "$ENV" = "production" ]; then
+            echo "→ Restarting with PM2..."
+            pm2 restart signature-chair-backend || pm2 start ecosystem.config.js
+            pm2 save
+        else
+            echo "→ Build complete. Run 'npm run dev' to start."
+        fi
 
-echo "🎉 Deployment complete!"
-rm ben-console-deploy.tar.gz
+        echo -e "${GREEN}✓ Backend deployed successfully${NC}"
+        ;;
+
+    2)
+        echo ""
+        echo "=== Deploying Frontend ==="
+        cd /var/www/signature-chair-frontend 2>/dev/null || cd frontend
+
+        echo "→ Pulling latest code..."
+        git pull
+
+        echo "→ Installing dependencies..."
+        npm install
+
+        echo "→ Building Next.js..."
+        npm run build
+
+        if [ "$ENV" = "production" ]; then
+            echo "→ Restarting with PM2..."
+            pm2 restart signature-chair-frontend || pm2 start ecosystem.config.js
+            pm2 save
+        else
+            echo "→ Build complete. Run 'npm start' to start."
+        fi
+
+        echo -e "${GREEN}✓ Frontend deployed successfully${NC}"
+        ;;
+
+    3)
+        echo ""
+        echo "=== Full Deployment (Backend + Frontend) ==="
+
+        # Backend
+        echo ""
+        echo "→ Deploying Backend..."
+        cd /var/www/signature-chair-backend 2>/dev/null || cd backend
+        git pull
+        npm install
+        npx prisma generate
+        npx prisma migrate deploy
+        npm run build
+
+        if [ "$ENV" = "production" ]; then
+            pm2 restart signature-chair-backend || pm2 start ecosystem.config.js
+        fi
+        echo -e "${GREEN}✓ Backend deployed${NC}"
+
+        # Frontend
+        echo ""
+        echo "→ Deploying Frontend..."
+        cd /var/www/signature-chair-frontend 2>/dev/null || cd ../frontend
+        git pull
+        npm install
+        npm run build
+
+        if [ "$ENV" = "production" ]; then
+            pm2 restart signature-chair-frontend || pm2 start ecosystem.config.js
+            pm2 save
+        fi
+        echo -e "${GREEN}✓ Frontend deployed${NC}"
+
+        if [ "$ENV" = "production" ]; then
+            echo ""
+            echo "=== Deployment Summary ==="
+            pm2 list
+        fi
+
+        echo ""
+        echo -e "${GREEN}✓✓ Full deployment complete!${NC}"
+        ;;
+
+    4)
+        echo "Exiting..."
+        exit 0
+        ;;
+
+    *)
+        echo -e "${RED}Invalid choice. Exiting.${NC}"
+        exit 1
+        ;;
+esac
+
+echo ""
+echo "=================================="
+echo "Deployment Complete!"
+echo "=================================="
