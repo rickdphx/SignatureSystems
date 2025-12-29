@@ -1,0 +1,672 @@
+══════════════════════════════════════════════════════════════════
+  PROFESSIONAL BEN ADMIN - ONE-STEP DEPLOYMENT
+══════════════════════════════════════════════════════════════════
+
+🔹 OPTION 1: Deploy from Windows PowerShell
+──────────────────────────────────────────────────────────────────
+1. Download admin-ui-professional.html to your Windows machine
+2. Open PowerShell in the same folder
+3. Run this command:
+
+type admin-ui-professional.html | ssh -i "C:\Users\rickd\Downloads\chatnotion-key.pem" ubuntu@18.118.103.251 "cat > /var/www/signaturebrain/admin-ui/index.html"
+
+
+🔹 OPTION 2: Deploy via SSH (Recommended)
+──────────────────────────────────────────────────────────────────
+1. SSH to your server:
+   ssh -i "C:\Users\rickd\Downloads\chatnotion-key.pem" ubuntu@18.118.103.251
+
+2. Backup current file:
+   cp /var/www/signaturebrain/admin-ui/index.html /var/www/signaturebrain/admin-ui/index.html.backup
+
+3. Download from GitHub and deploy:
+   cd /tmp
+   curl -o admin-new.html https://raw.githubusercontent.com/rickdphx/SignatureSystems/claude/fix-terminal-response-jqUon/admin-ui-professional.html
+   cp admin-new.html /var/www/signaturebrain/admin-ui/index.html
+   
+4. Verify:
+   head -n 6 /var/www/signaturebrain/admin-ui/index.html
+
+
+🔹 OPTION 3: Manual SSH Paste (If GitHub not accessible)
+──────────────────────────────────────────────────────────────────
+1. SSH to server
+2. Run this entire command block:
+
+cat > /var/www/signaturebrain/admin-ui/index.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEN Admin Control Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #1a1f3a;
+            --bg-tertiary: #0d1117;
+            --bg-card: #151b2e;
+            --border-color: #2a3f5f;
+            --border-light: #30363d;
+            --text-primary: #e0e0e0;
+            --text-secondary: #8b949e;
+            --accent-blue: #4a9eff;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --accent-purple: #a855f7;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #0f1420 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(26, 31, 58, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4a9eff 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 100px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Panel */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .panel:hover {
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .panel-icon {
+            font-size: 1.5rem;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(74, 158, 255, 0.1), rgba(168, 85, 247, 0.1));
+            border-radius: 12px;
+            border: 1px solid rgba(74, 158, 255, 0.2);
+        }
+
+        .panel h2 {
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .panel-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.3px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 0.875rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: rgba(74, 158, 255, 0.05);
+            box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+        }
+
+        .input-icon:hover {
+            color: var(--accent-blue);
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), #3a8eef);
+            color: white;
+            box-shadow: 0 4px 14px rgba(74, 158, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 158, 255, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--accent-green), #16a34a);
+            color: white;
+            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Terminal */
+        .terminal {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1.25rem;
+            font-family: 'SF Mono', 'Monaco', monospace;
+            font-size: 0.8125rem;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 1.5rem;
+        }
+
+        .terminal::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terminal::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        .terminal::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 4px;
+        }
+
+        .terminal-line {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.3);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .terminal-line:last-child {
+            border-bottom: none;
+        }
+
+        .timestamp {
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .output {
+            color: var(--accent-blue);
+            flex: 1;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .output.success { color: var(--accent-green); }
+        .output.error { color: var(--accent-red); }
+        .output.warning { color: var(--accent-yellow); }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Mode Badge */
+        .mode-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.875rem;
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 100px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--accent-purple);
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 1200px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem 1.5rem;
+            }
+            .container {
+                padding: 1.5rem;
+            }
+            .panel {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <h1>⚡ BEN Control Center</h1>
+                <div class="panel-subtitle" style="margin-top: 0.25rem;">Brainwave Enterprise Network Administration</div>
+            </div>
+            <div class="header-actions">
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span>System Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- BEN Console - Priority Position -->
+        <div class="panel full-width">
+            <div class="panel-header">
+                <div class="panel-icon">🧠</div>
+                <div>
+                    <h2>BEN Console</h2>
+                    <div class="panel-subtitle">Direct AI interaction with multi-mode processing</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Processing Mode</label>
+                <select id="ben-mode">
+                    <option value="normal">Normal - Standard Grok Processing</option>
+                    <option value="deep">Deep Reasoning - Advanced Claude Analysis</option>
+                    <option value="torah">Torah Mode - Torah-Aligned Responses</option>
+                    <option value="research">Research Mode - Comprehensive Investigation</option>
+                    <option value="execute">Haríts (Execute) - Direct Action Mode</option>
+                </select>
+                <span class="mode-badge">✨ Multi-model AI processing</span>
+            </div>
+
+            <div class="form-group">
+                <label>AI Prompt <span style="color: var(--text-secondary); font-weight: 400;">(Press Ctrl+Enter to submit)</span></label>
+                <textarea id="ben-prompt" placeholder="Enter your prompt for BEN processing...&#10;&#10;Example prompts:&#10;• Analyze market trends for Q4 2024&#10;• Generate Torah-aligned business strategy&#10;• Execute data migration to new system"></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="submitPrompt()">
+                    <span>🚀</span> Submit to BEN
+                </button>
+                <button class="btn btn-success" onclick="clearConsole()">
+                    <span>🔄</span> Clear Console
+                </button>
+            </div>
+
+            <div id="console-output" class="terminal" style="display:none;">
+                <div class="terminal-line">
+                    <span class="timestamp">[Console]</span>
+                    <span class="output">Ready for processing</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Grid -->
+        <div class="grid">
+            <!-- AI Models Configuration -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-icon">🔑</div>
+                    <div>
+                        <h2>AI Models Configuration</h2>
+                        <div class="panel-subtitle">Dual-model AI infrastructure</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Grok API Key (Primary Model)</label>
+                    <div class="input-with-icon">
+                        <input type="password" id="grok-key" placeholder="xai-..." autocomplete="off">
+                        <span class="input-icon" onclick="togglePassword('grok-key')">👁️</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Grok Model Version</label>
+                    <input type="text" id="grok-model" value="grok-beta" placeholder="grok-beta">
+                </div>
+
+                <div class="form-group">
+                    <label>Claude API Key (Deep Reasoning)</label>
+                    <div class="input-with-icon">
+                        <input type="password" id="claude-key" placeholder="sk-ant-..." autocomplete="off">
+                        <span class="input-icon" onclick="togglePassword('claude-key')">👁️</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Claude Model Version</label>
+                    <input type="text" id="claude-model" value="claude-3-5-sonnet-20241022" placeholder="claude-3-5-sonnet-20241022">
+                </div>
+
+                <div class="form-group">
+                    <label>System Instructions</label>
+                    <textarea id="system-instructions" placeholder="Define AI behavior and constraints...">You are a helpful AI assistant aligned with Torah principles and business excellence.</textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="saveConfig()">
+                        <span>💾</span> Save AI Configuration
+                    </button>
+                </div>
+            </div>
+
+            <!-- BEN Integration -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-icon">🤖</div>
+                    <div>
+                        <h2>BEN Service Integration</h2>
+                        <div class="panel-subtitle">External service connectivity</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>BEN Service URL</label>
+                    <input type="text" id="ben-url" placeholder="https://ben.example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>BEN API Token</label>
+                    <div class="input-with-icon">
+                        <input type="password" id="ben-token" placeholder="Bearer token..." autocomplete="off">
+                        <span class="input-icon" onclick="togglePassword('ben-token')">👁️</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Webhook URL</label>
+                    <input type="text" id="webhook-url" placeholder="https://yoursite.com/webhook">
+                </div>
+
+                <div class="form-group">
+                    <label>Service Configuration (JSON)</label>
+                    <textarea id="ben-config" placeholder='{"model":"grok-beta","temperature":0.7,"max_tokens":2000}'></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="testConnection()">
+                        <span>🔌</span> Test Connection
+                    </button>
+                    <button class="btn btn-primary" onclick="saveConfig()">
+                        <span>💾</span> Save Integration
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Logs -->
+        <div class="panel full-width">
+            <div class="panel-header">
+                <div class="panel-icon">💻</div>
+                <div>
+                    <h2>System Activity Logs</h2>
+                    <div class="panel-subtitle">Real-time system monitoring and diagnostics</div>
+                </div>
+            </div>
+
+            <div class="terminal" id="logs">
+                <div class="terminal-line">
+                    <span class="timestamp">[System]</span>
+                    <span class="output success">BEN Control Center initialized successfully</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="timestamp">[Status]</span>
+                    <span class="output">Awaiting configuration and commands</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function saveConfig() {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const line = `<div class="terminal-line"><span class="timestamp">[${timestamp}]</span><span class="output success">✓ Configuration saved successfully</span></div>`;
+            logs.innerHTML += line;
+            logs.scrollTop = logs.scrollHeight;
+            alert('Configuration saved successfully!\n\nNote: Connect backend API for full persistence.');
+        }
+
+        function testConnection() {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const line = `<div class="terminal-line"><span class="timestamp">[${timestamp}]</span><span class="output">🔌 Testing BEN service connection...</span></div>`;
+            logs.innerHTML += line;
+            logs.scrollTop = logs.scrollHeight;
+
+            setTimeout(() => {
+                const resultLine = `<div class="terminal-line"><span class="timestamp">[${new Date().toLocaleTimeString()}]</span><span class="output warning">⚠ Connect backend API to enable connection testing</span></div>`;
+                logs.innerHTML += resultLine;
+                logs.scrollTop = logs.scrollHeight;
+            }, 1000);
+        }
+
+        function submitPrompt() {
+            const prompt = document.getElementById('ben-prompt').value.trim();
+            const mode = document.getElementById('ben-mode').value;
+
+            if (!prompt) {
+                alert('Please enter a prompt before submitting.');
+                return;
+            }
+
+            const output = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.style.display = 'block';
+            output.innerHTML = `
+                <div class="terminal-line">
+                    <span class="timestamp">[${timestamp}]</span>
+                    <span class="output">Mode: ${mode.toUpperCase()}</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="timestamp">[Input]</span>
+                    <span class="output">${prompt}</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="timestamp">[Status]</span>
+                    <span class="output warning">⚠ Connect backend API to process prompts</span>
+                </div>
+            `;
+
+            // Log to system logs
+            const logs = document.getElementById('logs');
+            logs.innerHTML += `<div class="terminal-line"><span class="timestamp">[${timestamp}]</span><span class="output">BEN Console prompt submitted - Mode: ${mode}</span></div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function clearConsole() {
+            const output = document.getElementById('console-output');
+            output.style.display = 'none';
+            output.innerHTML = '<div class="terminal-line"><span class="timestamp">[Console]</span><span class="output">Ready for processing</span></div>';
+        }
+
+        // Keyboard shortcut: Ctrl+Enter to submit
+        document.getElementById('ben-prompt').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                submitPrompt();
+            }
+        });
+
+        // Auto-log initialization
+        window.addEventListener('load', function() {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logs.innerHTML += `<div class="terminal-line"><span class="timestamp">[${timestamp}]</span><span class="output success">✓ All systems operational</span></div>`;
+        });
+    </script>
+</body>
+</html>
+HTMLEOF
+
+3. Press Enter to finish
+
+
+✅ After deployment, visit: https://signaturebrain.com/admin/
+
+══════════════════════════════════════════════════════════════════

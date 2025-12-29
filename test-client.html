@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Response Test Client</title>
+    <style>
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #0f0;
+            font-size: 24px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            background: #111;
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #0c0;
+        }
+        button:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #0f0;
+        }
+        .terminal {
+            background: #111;
+            border: 1px solid #0f0;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .terminal-line {
+            margin: 5px 0;
+        }
+        .timestamp {
+            color: #888;
+            margin-right: 10px;
+        }
+        .error {
+            color: #f00;
+        }
+        .success {
+            color: #0f0;
+        }
+        .warning {
+            color: #ff0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TERMINAL RESPONSE TEST CLIENT</h1>
+
+        <div class="input-group">
+            <label for="wsUrl">WebSocket URL:</label>
+            <input type="text" id="wsUrl" value="ws://21.0.0.198:3000" placeholder="ws://localhost:3000">
+        </div>
+
+        <div class="input-group">
+            <label for="token">Admin Token:</label>
+            <input type="text" id="token" value="admin-token-12345" placeholder="Enter admin token">
+        </div>
+
+        <button id="connectBtn" onclick="connect()">Connect</button>
+        <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+
+        <div class="status">
+            Status: <span id="status">disconnected</span>
+        </div>
+
+        <div class="terminal" id="terminal">
+            <div class="terminal-line">Waiting for connection...</div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+
+        function log(message, type = 'info') {
+            const terminal = document.getElementById('terminal');
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+
+            const timestamp = document.createElement('span');
+            timestamp.className = 'timestamp';
+            timestamp.textContent = new Date().toLocaleTimeString();
+
+            const text = document.createElement('span');
+            text.className = type;
+            text.textContent = message;
+
+            line.appendChild(timestamp);
+            line.appendChild(text);
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function updateStatus(status) {
+            document.getElementById('status').textContent = status;
+        }
+
+        function connect() {
+            const wsUrl = document.getElementById('wsUrl').value;
+            const token = document.getElementById('token').value;
+
+            if (!wsUrl || !token) {
+                log('Please enter both WebSocket URL and token', 'error');
+                return;
+            }
+
+            log(`Connecting to ${wsUrl}...`, 'info');
+            updateStatus('connecting');
+
+            try {
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    log('WebSocket connected!', 'success');
+                    updateStatus('connected (authenticating)');
+
+                    // Send authentication
+                    const authMessage = JSON.stringify({
+                        type: 'auth',
+                        token: token
+                    });
+                    ws.send(authMessage);
+                    log('Sent authentication token', 'info');
+
+                    document.getElementById('connectBtn').disabled = true;
+                    document.getElementById('disconnectBtn').disabled = false;
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+
+                        if (data.type === 'auth_success') {
+                            log('Authentication successful!', 'success');
+                            updateStatus('connected (authenticated)');
+                        } else if (data.type === 'auth_failed') {
+                            log('Authentication failed: ' + data.message, 'error');
+                            updateStatus('authentication failed');
+                            ws.close();
+                        } else if (data.type === 'terminal') {
+                            log(`Terminal: ${data.data.output} (uptime: ${data.data.uptime}s)`, 'info');
+                        } else {
+                            log('Received: ' + JSON.stringify(data), 'info');
+                        }
+                    } catch (e) {
+                        log('Received non-JSON: ' + event.data, 'warning');
+                    }
+                };
+
+                ws.onerror = (error) => {
+                    log('WebSocket error occurred', 'error');
+                    console.error(error);
+                    updateStatus('error');
+                };
+
+                ws.onclose = () => {
+                    log('WebSocket disconnected', 'warning');
+                    updateStatus('disconnected');
+                    document.getElementById('connectBtn').disabled = false;
+                    document.getElementById('disconnectBtn').disabled = true;
+                };
+
+            } catch (e) {
+                log('Error creating WebSocket: ' + e.message, 'error');
+                updateStatus('error');
+            }
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                log('Disconnecting...', 'info');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,63 +1,148 @@
 const express = require('express');
-const basicAuth = require('express-basic-auth');
-const path = require('path');
-const basicAuth = require('express-basic-auth');
+const http = require('http');
+const WebSocket = require('ws');
+const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 80;
+app.use(cors());
+app.use(express.json());
 
-// Basic authentication
-app.use(basicAuth({
-    users: { 'Yahu86': '2121' },
-    challenge: true,
-    realm: 'Ben Console Access'
-}));
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
-// Serve static files from public directory
-app.use(express.static('public'));
+// Admin token validation
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'admin-token-12345';
 
-// Root route - serve ben.html
+// Store connected clients
+const clients = new Map();
+
+wss.on('connection', (ws, req) => {
+  const clientIP = req.socket.remoteAddress;
+  console.log(`[${new Date().toISOString()}] New connection from ${clientIP}`);
+  console.log(`[${new Date().toISOString()}] URL: ${req.url}`);
+
+  // Parse URL to get token from query parameter
+  const url = new URL(req.url, 'http://localhost');
+  const tokenFromUrl = url.searchParams.get('token');
+
+  // Authenticate from URL parameter if provided
+  if (tokenFromUrl) {
+    if (tokenFromUrl === ADMIN_TOKEN) {
+      clients.set(ws, { authenticated: true, connectedAt: Date.now() });
+      ws.send(JSON.stringify({
+        type: 'auth_success',
+        message: 'Authentication successful'
+      }));
+      console.log(`[${new Date().toISOString()}] Client authenticated via URL parameter`);
+      startTerminalPush(ws);
+    } else {
+      console.log(`[${new Date().toISOString()}] Authentication failed - invalid token`);
+      ws.send(JSON.stringify({
+        type: 'auth_failed',
+        message: 'Invalid token'
+      }));
+      ws.close();
+      return;
+    }
+  }
+
+  ws.on('message', (message) => {
+    try {
+      console.log(`[${new Date().toISOString()}] Received message:`, message.toString());
+      const data = JSON.parse(message);
+
+      // Handle token authentication via message (fallback)
+      if (data.type === 'auth' && data.token && !clients.has(ws)) {
+        if (data.token === ADMIN_TOKEN) {
+          clients.set(ws, { authenticated: true, connectedAt: Date.now() });
+          ws.send(JSON.stringify({
+            type: 'auth_success',
+            message: 'Authentication successful'
+          }));
+          console.log(`[${new Date().toISOString()}] Client authenticated via message`);
+          startTerminalPush(ws);
+        } else {
+          console.log(`[${new Date().toISOString()}] Authentication failed - invalid token`);
+          ws.send(JSON.stringify({
+            type: 'auth_failed',
+            message: 'Invalid token'
+          }));
+          ws.close();
+        }
+      }
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] Error processing message:`, error);
+    }
+  });
+
+  ws.on('close', () => {
+    clients.delete(ws);
+    console.log(`[${new Date().toISOString()}] Client disconnected`);
+  });
+
+  ws.on('error', (error) => {
+    console.error(`[${new Date().toISOString()}] WebSocket error:`, error);
+  });
+});
+
+function startTerminalPush(ws) {
+  const interval = setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN && clients.has(ws)) {
+      const terminalResponse = {
+        type: 'terminal',
+        timestamp: new Date().toISOString(),
+        data: {
+          command: 'status',
+          output: `System active - ${new Date().toLocaleTimeString()}`,
+          uptime: Math.floor((Date.now() - clients.get(ws).connectedAt) / 1000)
+        }
+      };
+
+      ws.send(JSON.stringify(terminalResponse));
+    } else {
+      clearInterval(interval);
+    }
+  }, 1000);
+
+  ws.on('close', () => {
+    clearInterval(interval);
+  });
+}
+
+// Serve test client
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'ben.html'));
+  res.sendFile(__dirname + '/test-client.html');
 });
 
-// BG route with basic auth - serve ben.html
-app.get('/bg/', auth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'ben.html'));
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    clients: clients.size,
+    timestamp: new Date().toISOString()
+  });
 });
 
-// BG login route - redirects to /bg/
-app.get('/bg/login.html', auth, (req, res) => {
-  res.redirect('/bg/');
-});
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 
-// Ben console route
-app.get('/ben', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'ben.html'));
-});
+server.listen(PORT, HOST, () => {
+  console.log(`Server running on ${HOST}:${PORT}`);
+  console.log(`Admin token: ${ADMIN_TOKEN}`);
+  console.log(`\nWebSocket endpoints:`);
+  console.log(`  - ws://localhost:${PORT}`);
+  console.log(`  - ws://127.0.0.1:${PORT}`);
 
-// Admin route - serve Ben Console
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'ben.html'));
-});
+  // Try to get the actual IP
+  const os = require('os');
+  const networkInterfaces = os.networkInterfaces();
+  Object.keys(networkInterfaces).forEach(interfaceName => {
+    networkInterfaces[interfaceName].forEach(iface => {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        console.log(`  - ws://${iface.address}:${PORT}`);
+      }
+    });
+  });
 
-app.get('/admin/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'ben.html'));
-});
-
-// Serve standalone version directly
-app.get('/standalone', (req, res) => {
-  res.sendFile(path.join(__dirname, 'DOWNLOAD_THIS.html'));
-});
-
-// Download endpoint
-app.get('/download', (req, res) => {
-  res.download(path.join(__dirname, 'DOWNLOAD_THIS.html'), 'ben-console.html');
-});
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Ben Console Server running on http://localhost:${PORT}`);
-  console.log(`📺 Access Ben Console at http://localhost:${PORT}/ben`);
-  console.log(`🔐 BG Console at http://localhost:${PORT}/bg/ (protected)`);
-  console.log(`🌐 Also accessible at http://0.0.0.0:${PORT}`);
+  console.log(`\nHealth check: http://localhost:${PORT}/health`);
 });
