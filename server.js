@@ -1,8 +1,16 @@
 const express = require('express');
 const path = require('path');
+const basicAuth = require('express-basic-auth');
 
 const app = express();
 const PORT = process.env.PORT || 80;
+
+// Basic authentication - CHANGE THESE CREDENTIALS
+app.use(basicAuth({
+    users: { 'admin': 'changeme123' },
+    challenge: true,
+    realm: 'Ben Console Access'
+}));
 
 // Serve static files from public directory
 app.use(express.static('public'));
