@@ -9,8 +9,15 @@ import pandas as pd
 from config.settings import *
 from src.scanner.momentum_scanner import MomentumScanner
 from src.scanner.models import Position, SignalType, ExitReason
-from src.data.alpaca_client import AlpacaDataClient, AlpacaTradingClient
 from src.signals.technical_signals import TechnicalDetector
+
+# Broker imports
+if BROKER == 'alpaca':
+    from src.data.alpaca_client import AlpacaDataClient, AlpacaTradingClient
+elif BROKER == 'schwab':
+    from src.data.schwab_client import SchwabAuthClient, SchwabDataClient, SchwabTradingClient
+else:
+    raise ValueError(f"Unknown broker: {BROKER}. Use 'alpaca' or 'schwab'")
 
 class MomentumTradingBot:
     """
@@ -23,9 +30,26 @@ class MomentumTradingBot:
 
     def __init__(self):
         self.scanner = MomentumScanner()
-        self.data_client = AlpacaDataClient()
-        self.trading_client = AlpacaTradingClient()
         self.technical_detector = TechnicalDetector()
+
+        # Initialize broker clients
+        if BROKER == 'alpaca':
+            self.data_client = AlpacaDataClient()
+            self.trading_client = AlpacaTradingClient()
+        elif BROKER == 'schwab':
+            # Initialize Schwab auth
+            self.schwab_auth = SchwabAuthClient(
+                app_key=SCHWAB_APP_KEY,
+                app_secret=SCHWAB_APP_SECRET,
+                callback_url=SCHWAB_CALLBACK_URL
+            )
+            # Set saved refresh token
+            self.schwab_auth.refresh_token = SCHWAB_REFRESH_TOKEN
+            # Get fresh access token
+            self.schwab_auth.refresh_access_token()
+
+            self.data_client = SchwabDataClient(self.schwab_auth)
+            self.trading_client = SchwabTradingClient(self.schwab_auth, SCHWAB_ACCOUNT_HASH)
 
         # Active positions
         self.positions: Dict[str, Position] = {}

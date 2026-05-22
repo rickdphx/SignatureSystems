@@ -5,10 +5,20 @@ from typing import List, Tuple
 
 load_dotenv()
 
+# Broker Selection
+BROKER = os.getenv('BROKER', 'schwab').lower()  # 'alpaca' or 'schwab'
+
 # Alpaca API
 ALPACA_API_KEY = os.getenv('ALPACA_API_KEY')
 ALPACA_SECRET_KEY = os.getenv('ALPACA_SECRET_KEY')
 ALPACA_BASE_URL = os.getenv('ALPACA_BASE_URL', 'https://paper-api.alpaca.markets')
+
+# Schwab API
+SCHWAB_APP_KEY = os.getenv('SCHWAB_APP_KEY')
+SCHWAB_APP_SECRET = os.getenv('SCHWAB_APP_SECRET')
+SCHWAB_CALLBACK_URL = os.getenv('SCHWAB_CALLBACK_URL', 'https://localhost:8000/callback')
+SCHWAB_ACCOUNT_HASH = os.getenv('SCHWAB_ACCOUNT_HASH')
+SCHWAB_REFRESH_TOKEN = os.getenv('SCHWAB_REFRESH_TOKEN')  # Save after first auth
 
 # Polygon
 POLYGON_API_KEY = os.getenv('POLYGON_API_KEY')
